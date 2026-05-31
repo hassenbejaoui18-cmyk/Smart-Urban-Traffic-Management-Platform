@@ -22,3 +22,13 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+
+# Six File Context Methodology
+Six-File+Context+Methodology/
+Six-File+Context+Methodology/README.md
+
+# Project spec PDF (binary — keep only in context/)
+Mini_Projet_Web_Services_GraphQL*.pdf
+
+# Skipped context files (frontend is bonus)
+context/ui-context.md
