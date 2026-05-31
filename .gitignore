@@ -1,8 +1,8 @@
 # Nestjs specific
-/dist
-/node_modules
-/build
-/tmp
+dist/
+node_modules/
+build/
+tmp/
 
 # Logs
 logs
@@ -29,6 +29,14 @@ Six-File+Context+Methodology/README.md
 
 # Project spec PDF (binary — keep only in context/)
 Mini_Projet_Web_Services_GraphQL*.pdf
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Env example (keep the template but not real secrets)
+!.env.example
 
 # Skipped context files (frontend is bonus)
 context/ui-context.md

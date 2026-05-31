@@ -1,0 +1,9 @@
+{
+  "name": "smart-urban-traffic-management",
+  "private": true,
+  "workspaces": ["services/*", "gateway"],
+  "scripts": {
+    "build:auth": "npm run build -w services/auth",
+    "dev:auth": "npm run start:dev -w services/auth"
+  }
+}
