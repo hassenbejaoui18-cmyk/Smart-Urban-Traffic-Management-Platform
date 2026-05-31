@@ -6,7 +6,7 @@ Context setup — complete
 
 ## Current Goal
 
-Build the Authentication service (innermost dependency — all other services depend on it).
+Scaffold monorepo and build the Auth service (Unit 1).
 
 ## Completed
 
@@ -18,6 +18,7 @@ Build the Authentication service (innermost dependency — all other services de
 - `context/ai-workflow-rules.md` — written with spec-driven approach, scoping rules, split conditions, missing requirements policy, protected files, verification checklist
 - `ui-context.md` skipped — frontend is a bonus; will create later if needed
 - Framework confirmed: NestJS (code-first GraphQL, Prisma, PostgreSQL)
+- Build plan created at `context/specs/00-build-plan.md` — 7 units in dependency order
 
 ## In Progress
 
@@ -25,9 +26,13 @@ Build the Authentication service (innermost dependency — all other services de
 
 ## Next Up
 
-1. Scaffold the monorepo with NestJS for Auth service
-2. Set up Prisma schema for Auth (`users` table with roles)
-3. Implement Auth service: register, login, JWT issuance, role guards
+1. **Unit 1** — Scaffold monorepo + Auth service (register, login, JWT, role guards)
+2. **Unit 2** — Vehicle service (CRUD, GPS positions, movement history)
+3. **Unit 3** — Traffic service (zones, density computation, congestion classification)
+4. **Unit 4** — Incident service (reporting, status transitions)
+5. **Unit 5** — Notification service (send, list, mark-read)
+6. **Unit 6** — GraphQL Gateway + cross-service event wiring
+7. **Unit 7** — Deliverables (READMEs, UML diagrams, Postman, sample queries)
 
 ## Open Questions
 
