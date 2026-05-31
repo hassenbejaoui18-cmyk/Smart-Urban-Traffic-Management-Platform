@@ -1,0 +1,90 @@
+{
+  "info": {
+    "name": "Smart Urban Traffic — Auth Service",
+    "description": "GraphQL operations for the Auth service.\n\nRun Login (Admin) first — its post-response script auto-sets the `token` variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4001", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation Register($input: RegisterInput!) {\n  register(registerInput: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
+            "variables": "{\n  \"input\": {\n    \"email\": \"operator@smarttraffic.com\",\n    \"password\": \"password123\"\n  }\n}"
+          }
+        },
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+      }
+    },
+    {
+      "name": "Login (Admin)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json.data && json.data.login) {",
+              "  pm.collectionVariables.set('token', json.data.login.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation Login($input: LoginInput!) {\n  login(loginInput: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
+            "variables": "{\n  \"input\": {\n    \"email\": \"admin@smarttraffic.com\",\n    \"password\": \"admin1234\"\n  }\n}"
+          }
+        },
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query Me {\n  me { id email role createdAt updatedAt }\n}",
+            "variables": ""
+          }
+        },
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+      }
+    },
+    {
+      "name": "Register (Invalid Input)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "mutation Register($input: RegisterInput!) {\n  register(registerInput: $input) {\n    token\n    user { id email role }\n  }\n}",
+            "variables": "{\n  \"input\": {\n    \"email\": \"not-an-email\",\n    \"password\": \"short\"\n  }\n}"
+          }
+        },
+        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+      }
+    }
+  ]
+}

@@ -493,6 +493,25 @@ AUTH_PORT=4001
 | `@types/passport-jwt` | passport-jwt TypeScript types |
 | `ts-node` | Run seed scripts and migrations |
 
+## Unit Tests
+
+Jest config: `rootDir: "src"`, `testRegex: ".*\\.spec\\.ts$"`.
+
+```bash
+npm test -w services/auth
+npm run test:cov -w services/auth  # with coverage
+```
+
+| File | Tests | Coverage |
+|---|---|---|
+| `auth.service.spec.ts` | 7 | register (success, duplicate), login (valid, missing, wrong password), me (found, not found) |
+| `auth.resolver.spec.ts` | 3 | register/login/me delegate to `AuthService` with correct args |
+| `jwt.strategy.spec.ts` | 1 | `validate({sub, role})` returns `{id, role}` |
+| `roles.guard.spec.ts` | 5 | no roles → allow, matching → allow, wrong → deny, any-of → allow, calls `GqlExecutionContext.create` |
+| `current-user.decorator.spec.ts` | 1 | extracts user from `req.user` via `GqlExecutionContext` |
+| `graphql-exception.filter.spec.ts` | 3 | `GraphQLError`/`HttpException` rethrown, unknown wrapped in `InternalServerErrorException` |
+| **Total** | **20** | All pass with no warnings |
+
 ## Verification Checklist
 
 1. `npm install` at root resolves all workspaces without errors.
