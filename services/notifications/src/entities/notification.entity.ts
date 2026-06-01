@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Directive, Field, ObjectType } from '@nestjs/graphql';
 import { TriggerType } from './trigger-type.enum';
 
 /**
@@ -12,6 +12,7 @@ import { TriggerType } from './trigger-type.enum';
  */
 
 @ObjectType()
+@Directive('@key(fields: "id")')
 export class Notification {
   @Field()
   id!: string;

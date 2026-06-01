@@ -1,5 +1,5 @@
 import { registerEnumType } from '@nestjs/graphql';
-import { Role } from '@prisma/client';
+import { Role } from '@prisma/auth-client';
 
 /**
  * Enum: Role (GraphQL)

@@ -12,6 +12,8 @@
     "build:incidents": "npm run build -w services/incidents",
     "dev:incidents": "npm run start:dev -w services/incidents",
     "build:notifications": "npm run build -w services/notifications",
-    "dev:notifications": "npm run start:dev -w services/notifications"
+    "dev:notifications": "npm run start:dev -w services/notifications",
+    "build:gateway": "npm run build -w gateway",
+    "dev:gateway": "npm run start:dev -w gateway"
   }
 }

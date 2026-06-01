@@ -3,6 +3,12 @@ import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { IncidentStatus } from '../entities/incident-status.enum';
 import { IncidentType } from '../entities/incident-type.enum';
 
+/**
+ * InputType: IncidentFilterInput
+ * ------------------------------
+ * Optional filters for the incidents query: status, type,
+ * and zone ID.
+ */
 @InputType()
 export class IncidentFilterInput {
   @Field(() => IncidentStatus, { nullable: true })

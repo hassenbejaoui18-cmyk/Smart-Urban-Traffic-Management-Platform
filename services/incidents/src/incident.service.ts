@@ -6,8 +6,17 @@ import {
 import { Role } from './common/role.enum';
 import { IncidentType } from './entities/incident-type.enum';
 import { IncidentStatus } from './entities/incident-status.enum';
+import { NotificationClientService } from './providers/notification-client.service';
 import { PrismaService } from './providers/prisma.service';
 
+/**
+ * Service: IncidentService
+ * ------------------------
+ * Implements incident domain logic: creating incidents, listing
+ * with role-based scoping, status transitions (REPORTED →
+ * IN_PROGRESS → RESOLVED), and automatic notification dispatch
+ * via NotificationClientService.
+ */
 @Injectable()
 export class IncidentService {
   private readonly validTransitions: Record<IncidentStatus, IncidentStatus[]> =
@@ -17,7 +26,10 @@ export class IncidentService {
       [IncidentStatus.RESOLVED]: [],
     };
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationClient: NotificationClientService,
+  ) {}
 
   async create(
     input: {
@@ -29,7 +41,7 @@ export class IncidentService {
     },
     reportedBy: string,
   ) {
-    return this.prisma.incident.create({
+    const incident = await this.prisma.incident.create({
       data: {
         type: input.type,
         description: input.description,
@@ -39,6 +51,15 @@ export class IncidentService {
         reportedBy,
       },
     });
+
+    await this.notificationClient.notifyIncidentCreated(
+      reportedBy,
+      incident.id,
+      input.type,
+      input.description,
+    );
+
+    return incident;
   }
 
   async findAll(
@@ -99,9 +120,17 @@ export class IncidentService {
       );
     }
 
-    return this.prisma.incident.update({
+    const updated = await this.prisma.incident.update({
       where: { id },
       data: { status: newStatus },
     });
+
+    await this.notificationClient.notifyIncidentStatusChanged(
+      incident.reportedBy,
+      id,
+      newStatus,
+    );
+
+    return updated;
   }
 }

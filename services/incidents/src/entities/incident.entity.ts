@@ -1,8 +1,16 @@
-import { Field, Float, ObjectType } from '@nestjs/graphql';
+import { Directive, Field, Float, ObjectType } from '@nestjs/graphql';
 import { IncidentType } from './incident-type.enum';
 import { IncidentStatus } from './incident-status.enum';
 
+/**
+ * ObjectType: Incident
+ * --------------------
+ * GraphQL type representing a reported incident with its type,
+ * status, description, optional GPS coordinates, zone reference,
+ * reporter, and timestamps. Federated entity with @key directive.
+ */
 @ObjectType()
+@Directive('@key(fields: "id")')
 export class Incident {
   @Field()
   id!: string;

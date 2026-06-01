@@ -1,0 +1,35 @@
+{
+  "name": "gateway",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:prod": "node dist/main"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/config": "^4.0.1",
+    "@nestjs/graphql": "^13.0.3",
+    "@nestjs/apollo": "^13.0.3",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.5",
+    "@apollo/gateway": "^2.9.3",
+    "@apollo/subgraph": "^2.9.3",
+    "apollo-server-express": "^3.13.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "graphql": "^16.10.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@types/node": "^24.0.0",
+    "@types/passport-jwt": "^4.0.1",
+    "typescript": "^5.7.3",
+    "ts-node": "^10.9.2"
+  }
+}

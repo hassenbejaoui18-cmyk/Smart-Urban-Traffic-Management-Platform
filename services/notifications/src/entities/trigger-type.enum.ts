@@ -1,5 +1,5 @@
 import { registerEnumType } from '@nestjs/graphql';
-import { TriggerType } from '@prisma/client';
+import { TriggerType } from '@prisma/notification-client';
 
 /**
  * File: trigger-type.enum.ts

@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
@@ -8,6 +8,15 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import ms from 'ms';
 import { GraphqlExceptionFilter } from './common/filters/graphql-exception.filter';
+
+/**
+ * Module: VehicleModule
+ * ---------------------
+ * Root module for the Vehicle microservice on port 4002.
+ * Configures GraphQL (Apollo Federation), JWT authentication,
+ * Prisma database access, GPS position resolver, and global
+ * exception filtering.
+ */
 import { GpsPositionResolver } from './gps-position.resolver';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { PrismaModule } from './providers/prisma.module';
@@ -18,9 +27,9 @@ import { VehicleService } from './vehicle.service';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+      driver: ApolloFederationDriver,
+      autoSchemaFile: { path: join(process.cwd(), 'src/schema.gql'), federation: 2 },
       playground: true,
     }),
     JwtModule.registerAsync({

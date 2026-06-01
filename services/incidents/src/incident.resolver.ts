@@ -12,6 +12,13 @@ import { RolesGuard } from './guards/roles.guard';
 import { IncidentService } from './incident.service';
 import { JwtPayload } from './strategies/jwt.strategy';
 
+/**
+ * Resolver: IncidentResolver
+ * --------------------------
+ * GraphQL resolver for incident CRUD and status transitions.
+ * Exposes createIncident, updateIncidentStatus, incidents,
+ * and incident queries/mutations.
+ */
 @Resolver(() => Incident)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class IncidentResolver {

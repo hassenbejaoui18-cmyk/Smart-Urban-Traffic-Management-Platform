@@ -3,6 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
+/**
+ * Interface: JwtPayload
+ * ---------------------
+ * Shape of the decoded JWT payload containing subject (user ID)
+ * and role for authorization checks in the Incident service.
+ */
 export interface JwtPayload {
   sub: string;
   role: string;

@@ -10,6 +10,12 @@ import {
 } from 'class-validator';
 import { IncidentType } from '../entities/incident-type.enum';
 
+/**
+ * InputType: CreateIncidentInput
+ * ------------------------------
+ * Input fields for reporting a new incident: type, description,
+ * optional GPS coordinates, and optional zone assignment.
+ */
 @InputType()
 export class CreateIncidentInput {
   @Field(() => IncidentType)

@@ -7,7 +7,7 @@
  * @returns {CongestionLevel}
  */
 import { registerEnumType } from '@nestjs/graphql';
-import { CongestionLevel } from '@prisma/client';
+import { CongestionLevel } from '@prisma/traffic-client';
 
 registerEnumType(CongestionLevel, { name: 'CongestionLevel' });
 

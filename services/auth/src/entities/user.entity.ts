@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Directive, Field, ObjectType } from '@nestjs/graphql';
 import { Role } from './role.enum';
 
 /**
@@ -9,6 +9,7 @@ import { Role } from './role.enum';
  * The password_hash field is never exposed.
  */
 @ObjectType()
+@Directive('@key(fields: "id")')
 export class User {
   @Field()
   id!: string;
