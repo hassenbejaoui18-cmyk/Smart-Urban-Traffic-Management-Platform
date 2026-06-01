@@ -10,7 +10,7 @@ Build this project incrementally using a spec-driven workflow. The context files
 - Do not make speculative changes. Every modification must be justified by a requirement in `project-overview.md` or an explicit user request.
 - Do not combine unrelated system boundaries in a single implementation step. For example, do not modify the Vehicle service and the Incident service in the same step unless they share a cross-cutting concern.
 - Do not add bonus/out-of-scope features (WebSocket, frontend, CI/CD, tests) unless the user explicitly asks for them.
-
+- do not make commmits until i ask for it 
 ## When to Split Work
 
 Split an implementation step if it combines:
