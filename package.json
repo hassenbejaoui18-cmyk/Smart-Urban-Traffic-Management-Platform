@@ -10,6 +10,8 @@
     "build:traffic": "npm run build -w services/traffic",
     "dev:traffic": "npm run start:dev -w services/traffic",
     "build:incidents": "npm run build -w services/incidents",
-    "dev:incidents": "npm run start:dev -w services/incidents"
+    "dev:incidents": "npm run start:dev -w services/incidents",
+    "build:notifications": "npm run build -w services/notifications",
+    "dev:notifications": "npm run start:dev -w services/notifications"
   }
 }
