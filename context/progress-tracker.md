@@ -3,6 +3,7 @@
 ## Current Phase
 
 Unit 1 — Monorepo scaffold + Auth service — complete
+Unit 2 — Vehicle service — implemented, migration applied, build passes
 
 ## Completed
 
@@ -20,7 +21,7 @@ Unit 1 — Monorepo scaffold + Auth service — complete
 
 ## In Progress
 
-- Nothing yet
+- README documentation overhaul — added Architecture Overview + Data Flow sections to root README, auth service README, and vehicle service README per new code-standards requirement
 
 ## Next Up
 
@@ -29,7 +30,7 @@ Unit 1 — Monorepo scaffold + Auth service — complete
 3. **Unit 4** — Incident service (reporting, status transitions)
 4. **Unit 5** — Notification service (send, list, mark-read)
 5. **Unit 6** — GraphQL Gateway + cross-service event wiring
-6. **Unit 7** — Deliverables (READMEs, UML diagrams, Postman, sample queries)
+6. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
 
 ## Open Questions
 

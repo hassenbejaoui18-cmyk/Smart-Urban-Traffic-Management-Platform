@@ -2,6 +2,111 @@
 
 User authentication service — registration, login, JWT issuance, and role-based access control (ADMIN / OPERATOR).
 
+## Architecture Overview
+
+### Service Context
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        GraphQL Gateway                              │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │  Routes: register, login, me                                  │  │
+│  │  Decorates requests with JwtAuthGuard / RolesGuard            │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+└────────────────────────────┬────────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Auth Service (:4001)                        │
+│  ┌──────────┐  ┌───────────────┐  ┌─────────────────────────────┐  │
+│  │ Resolver │──▶ Auth Service  │──▶ Prisma Client → PostgreSQL  │  │
+│  │ (thin)   │  │ (business     │  │ (users table)               │  │
+│  │          │  │  logic)       │  │                             │  │
+│  └──────────┘  └───────────────┘  └─────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+The Auth service is the identity provider for the platform. It is the only service that issues JWTs and manages user accounts. All other services and the gateway rely on the Auth service's JWT signing key to validate incoming tokens.
+
+### Components
+
+1. **AuthResolver** — Thin GraphQL resolver that receives `register`, `login`, and `me` mutations/queries, extracts arguments, and delegates to `AuthService`.
+2. **AuthService** — Contains all business logic: password hashing with bcrypt, credential verification, JWT signing and verification, user lookup.
+3. **JwtStrategy** — Passport strategy that extracts the JWT from the `Authorization` header, verifies the signature and expiry, and returns the decoded user payload.
+4. **RolesGuard** — Reads the user's `role` from the decoded JWT payload and compares it against the roles required by the `@Roles()` decorator.
+5. **Prisma Client** — Type-safe database access to the `users` table.
+
+## Data Flow
+
+### Registration Flow
+
+```
+Client ──register(input)──▶ Gateway ──▶ Auth Resolver ──▶ Auth Service
+                                                               │
+                                                     ┌─────────▼─────────┐
+                                                     │ 1. Validate input │
+                                                     │    (class-validator)
+                                                     │ 2. Check email    │
+                                                     │    uniqueness     │
+                                                     │ 3. Hash password  │
+                                                     │    (bcrypt 12)    │
+                                                     │ 4. Create user    │
+                                                     │    in PostgreSQL  │
+                                                     │ 5. Sign JWT       │
+                                                     │    (sub, role)    │
+                                                     └─────────┬─────────┘
+                                                               │
+Client ◀── { token, user } ── Gateway ◀── Auth Resolver ◀──────┘
+```
+
+1. Client sends `register` mutation with email and password to the gateway.
+2. Gateway routes the mutation to the Auth service resolver.
+3. `AuthResolver` delegates to `AuthService.register()`.
+4. `AuthService` validates the input via `class-validator` DTOs, checks that the email is not already taken, hashes the password with bcrypt (12 rounds), and creates a new `User` record in PostgreSQL.
+5. A signed JWT is returned containing the user's `id` (`sub`), `role`, `iat`, and `exp`.
+6. The response `{ token, user }` flows back through the resolver and gateway to the client.
+
+### Login Flow
+
+```
+Client ──login(input)──▶ Gateway ──▶ Auth Resolver ──▶ Auth Service
+                                                             │
+                                                   ┌─────────▼─────────┐
+                                                   │ 1. Validate input │
+                                                   │ 2. Lookup user    │
+                                                   │    by email       │
+                                                   │ 3. Compare        │
+                                                   │    password hash  │
+                                                   │ 4. Sign JWT       │
+                                                   └─────────┬─────────┘
+                                                             │
+Client ◀── { token, user } ── Gateway ◀── Auth Resolver ◀────┘
+```
+
+1. Client sends `login` mutation with email and password.
+2. `AuthService.lookup()` queries the `users` table by email.
+3. If the user exists, the provided password is compared against the stored bcrypt hash.
+4. On match, a new JWT is signed and returned. On mismatch, an `UnauthorizedException` is thrown.
+
+### Token Verification (used by all services)
+
+```
+Gateway receives request with Authorization header
+       │
+       ▼
+JwtAuthGuard.extractAndVerify(token)
+       │
+       ├── Verifies signature using AUTH_JWT_SECRET
+       ├── Checks expiry (exp claim)
+       └── Decodes payload: { sub, role, iat, exp }
+       │
+       ▼
+Request context populated with current user
+       │
+       ▼
+RolesGuard checks @Roles() decorator against user.role
+```
+
 ## Tech
 
 - NestJS 11, GraphQL (code-first, Apollo), Prisma 6, PostgreSQL

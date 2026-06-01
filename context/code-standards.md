@@ -170,10 +170,45 @@ export class CreateVehicleInput {
 
 ## Documentation Requirements
 
+- Every file (hook, component, service, resolver, guard, module, client, utility, etc.) must have a file-level JSDoc comment at the top explaining its purpose, usage, and return value (if applicable).
 - Every public method on a service must have a JSDoc comment explaining what it does, parameters, and return value.
 - Every GraphQL `@ObjectType` must have `@Field` descriptions for non-obvious fields.
-- Each service's `README.md` documents its environment variables, Prisma migration commands, and how to run it locally.
-- The root `README.md` documents the overall architecture, how to start all services, and links to each service's README.
+- Each service's `README.md` documents its architecture overview, data flow, environment variables, Prisma migration commands, and how to run it locally.
+- The root `README.md` documents the overall architecture with a high-level diagram, the end-to-end data flow, how to start all services, and links to each service's README.
+
+### README Structure
+
+Every README (root and per-service) must include the following sections:
+
+#### Architecture Overview
+A high-level architectural description including:
+- An ASCII diagram showing the service and its surrounding layers (clients, databases, other services).
+- A description of each component in the diagram and its role.
+- How the service fits into the broader system.
+
+#### Data Flow
+A clear walkthrough of how data moves through the service:
+- **Entry points** — how data enters the service (GraphQL mutations/queries, events, scheduled tasks).
+- **Processing** — what happens to the data (validation, business logic, transformations).
+- **Storage** — where data is persisted and in what shape.
+- **Outputs** — what is returned to callers or emitted to other services.
+
+For the root README, the Data Flow covers end-to-end request flow across all services.
+
+### JSDoc File-Level Structure
+
+```typescript
+/**
+ * File: <filename>
+ * -----------------
+ * <Brief description of the file's purpose and responsibilities.>
+ *
+ * <Optional: more detailed explanation of usage, context, or
+ *  side effects.>
+ *
+ * @returns {<type>} - <Description of what the file exports or returns.>
+ */
+```
 
 ## Database and Prisma
 
