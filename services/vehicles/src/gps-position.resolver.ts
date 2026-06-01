@@ -12,6 +12,12 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { VehicleService } from './vehicle.service';
 
+/**
+ * Resolver: GpsPositionResolver
+ * -----------------------------
+ * GraphQL resolver for GPS position recording and movement
+ * history queries. Delegates all logic to VehicleService.
+ */
 @Resolver()
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class GpsPositionResolver {

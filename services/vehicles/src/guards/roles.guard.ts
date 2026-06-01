@@ -3,6 +3,13 @@ import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Role } from '../common/role.enum';
 
+/**
+ * Guard: RolesGuard
+ * -----------------
+ * Checks the @Roles metadata on resolvers against the role in
+ * the JWT payload. Grants access if no roles are required or
+ * the user's role matches.
+ */
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}

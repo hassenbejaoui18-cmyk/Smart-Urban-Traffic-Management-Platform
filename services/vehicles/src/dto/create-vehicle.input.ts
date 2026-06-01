@@ -8,6 +8,12 @@ import {
 } from 'class-validator';
 import { VehicleType } from '../entities/vehicle-type.enum';
 
+/**
+ * InputType: CreateVehicleInput
+ * -----------------------------
+ * Input fields for creating a new vehicle: license plate,
+ * type (enum), and optional zone assignment.
+ */
 @InputType()
 export class CreateVehicleInput {
   @Field()

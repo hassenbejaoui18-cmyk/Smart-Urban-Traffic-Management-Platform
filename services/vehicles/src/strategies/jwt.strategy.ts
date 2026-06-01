@@ -4,6 +4,12 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Role } from '../common/role.enum';
 
+/**
+ * Interface: JwtPayload
+ * ---------------------
+ * Shape of the decoded JWT payload containing subject (user ID)
+ * and role for authorization checks.
+ */
 export interface JwtPayload {
   sub: string;
   role: Role;

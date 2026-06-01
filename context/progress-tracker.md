@@ -2,8 +2,7 @@
 
 ## Current Phase
 
-Unit 1 — Monorepo scaffold + Auth service — complete
-Unit 2 — Vehicle service — implemented, migration applied, build passes
+Unit 6 — GraphQL Gateway + cross-service wiring — complete
 
 ## Completed
 
@@ -20,22 +19,29 @@ Unit 2 — Vehicle service — implemented, migration applied, build passes
 - Build plan created at `context/specs/00-build-plan.md` — 7 units in dependency order
 - Unit 1 spec at `context/specs/01-auth-service.md`
 - **Unit 1 complete** — Root monorepo scaffolded with npm workspaces, Auth service on port 4001 with register/login/me, JWT issuance + role guards, Prisma schema for `users` table, seed script for admin user
-- Unit 3 spec at `context/specs/03-traffic-service.md` — zone management, density computation, congestion classification, scheduled task, cross-service vehicle client
+- Unit 2 spec at `context/specs/02-vehicle-service.md`
+- **Unit 2 complete** — Vehicle service on port 4002 with vehicle CRUD, GPS position recording, movement history, pagination, Prisma schema (`vehicles`, `gps_positions`), migration applied
+- Unit 3 spec at `context/specs/03-traffic-service.md`
 - **Unit 3 complete** — Traffic service on port 4003 with zone CRUD, density computation, congestion classification (LOW/MEDIUM/HIGH), scheduled 5-minute density task, cross-service Vehicle client, migration applied, build passes
-
-## In Progress
-
-- **Unit 5** — Notification service scaffolded, Prisma schema created (TriggerType enum + Notification model), service/resolver/module implemented with create, list (filterable by isRead), markAsRead, markAllAsRead. Build passes. Migration not yet applied.
+- Unit 4 spec at `context/specs/04-incident-service.md`
+- **Unit 4 complete** — Incident service on port 4004 with incident CRUD, status transitions (REPORTED→IN_PROGRESS→RESOLVED), role-scoped queries, Prisma schema (`incidents` table)
+- Unit 5 spec at `context/specs/05-notification-service.md`
+- **Unit 5 complete** — Notification service on port 4005 with create, list (filterable by isRead), markAsRead, markAllAsRead, Prisma schema (`notifications` table)
+- Unit 6 spec at `context/specs/06-gateway.md`
+- **Unit 6 complete** — All 5 services switched to `ApolloFederationDriver`, primary entities decorated with `@Directive('@key(fields: "id")')`, Gateway service scaffolded on port 4000 with `IntrospectAndCompose`, Incident→Notification cross-service wiring via `NotificationClientService`, gateway scripts in root package.json, `.env.example` updated
 
 ## Next Up
 
-1. **Unit 6** — GraphQL Gateway + cross-service event wiring
-2. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
+1. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
 
 ## Changes
 
 - JSDoc file-level rule added to `code-standards.md`: JSDoc must be placed **after** all import statements (was previously top-of-file).
 - Notification service (16 source files) follows the new JSDoc-after-imports rule.
+- All 5 services switched from `ApolloDriver` to `ApolloFederationDriver` with federation: 2 config.
+- All 5 primary entity `@ObjectType` classes annotated with `@Directive('@key(fields: "id")')`.
+- Gateway service created at `gateway/` with `ApolloGatewayDriver` + `IntrospectAndCompose`.
+- Incident service wired to Notification service via `NotificationClientService` (HTTP GraphQL).
 
 ## Open Questions
 

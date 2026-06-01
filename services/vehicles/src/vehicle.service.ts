@@ -6,6 +6,13 @@ import { RecordGpsPositionInput } from './dto/record-gps-position.input';
 import { VehicleFilterInput } from './dto/vehicle-filter.input';
 import { PrismaService } from './providers/prisma.service';
 
+/**
+ * Service: VehicleService
+ * -----------------------
+ * Implements vehicle domain logic: creating vehicles, listing
+ * them with optional filters (zone, type), retrieving movement
+ * history with pagination, and recording GPS positions.
+ */
 @Injectable()
 export class VehicleService {
   constructor(private readonly prisma: PrismaService) {}

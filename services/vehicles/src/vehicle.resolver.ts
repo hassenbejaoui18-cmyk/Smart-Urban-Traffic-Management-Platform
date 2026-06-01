@@ -11,6 +11,12 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles.guard';
 import { VehicleService } from './vehicle.service';
 
+/**
+ * Resolver: VehicleResolver
+ * -------------------------
+ * GraphQL resolver for vehicle CRUD operations.
+ * Exposes createVehicle, vehicles, and vehicle queries/mutations.
+ */
 @Resolver(() => Vehicle)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class VehicleResolver {
