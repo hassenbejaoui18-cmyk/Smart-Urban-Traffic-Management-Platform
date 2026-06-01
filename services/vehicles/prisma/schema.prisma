@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("VEHICLE_DATABASE_URL")
+}
+
+enum VehicleType {
+  CAR
+  TRUCK
+  MOTORCYCLE
+  BUS
+}
+
+model Vehicle {
+  id           String        @id @default(uuid())
+  licensePlate String        @unique @map("license_plate")
+  type         VehicleType
+  zoneId       String?       @map("zone_id")
+  ownerId      String        @map("owner_id")
+  positions    GpsPosition[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("vehicles")
+}
+
+model GpsPosition {
+  id         String   @id @default(uuid())
+  vehicleId  String   @map("vehicle_id")
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  latitude   Float
+  longitude  Float
+  recordedAt DateTime @map("recorded_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([vehicleId, recordedAt])
+  @@map("gps_positions")
+}
