@@ -20,6 +20,8 @@ Unit 2 — Vehicle service — implemented, migration applied, build passes
 - Build plan created at `context/specs/00-build-plan.md` — 7 units in dependency order
 - Unit 1 spec at `context/specs/01-auth-service.md`
 - **Unit 1 complete** — Root monorepo scaffolded with npm workspaces, Auth service on port 4001 with register/login/me, JWT issuance + role guards, Prisma schema for `users` table, seed script for admin user
+- Unit 3 spec at `context/specs/03-traffic-service.md` — zone management, density computation, congestion classification, scheduled task, cross-service vehicle client
+- **Unit 3 complete** — Traffic service on port 4003 with zone CRUD, density computation, congestion classification (LOW/MEDIUM/HIGH), scheduled 5-minute density task, cross-service Vehicle client, migration applied, build passes
 
 ## In Progress
 
@@ -27,12 +29,18 @@ Unit 2 — Vehicle service — implemented, migration applied, build passes
 
 ## Next Up
 
-1. **Unit 2** — Vehicle service (CRUD, GPS positions, movement history)
-2. **Unit 3** — Traffic service (zones, density computation, congestion classification)
-3. **Unit 4** — Incident service (reporting, status transitions)
-4. **Unit 5** — Notification service (send, list, mark-read)
-5. **Unit 6** — GraphQL Gateway + cross-service event wiring
-6. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
+1. **Unit 4** — Incident service (reporting, status transitions)
+2. **Unit 5** — Notification service (send, list, mark-read)
+3. **Unit 6** — GraphQL Gateway + cross-service event wiring
+4. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
+
+## Next Up
+
+1. **Unit 3** — Traffic service (zones, density computation, congestion classification)
+2. **Unit 4** — Incident service (reporting, status transitions)
+3. **Unit 5** — Notification service (send, list, mark-read)
+4. **Unit 6** — GraphQL Gateway + cross-service event wiring
+5. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
 
 ## Open Questions
 
