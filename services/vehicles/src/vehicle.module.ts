@@ -9,9 +9,9 @@ import { PassportModule } from '@nestjs/passport';
 import ms from 'ms';
 import { GraphqlExceptionFilter } from './common/filters/graphql-exception.filter';
 import { GpsPositionResolver } from './gps-position.resolver';
-import { JwtStrategy } from './jwt.strategy';
-import { PrismaModule } from './prisma.module';
-import { RolesGuard } from './roles.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { PrismaModule } from './providers/prisma.module';
+import { RolesGuard } from './guards/roles.guard';
 import { VehicleResolver } from './vehicle.resolver';
 import { VehicleService } from './vehicle.service';
 

@@ -1,15 +1,15 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Role } from './common/role.enum';
-import { CurrentUser } from './current-user.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { PaginationInput } from './dto/pagination.input';
 import { RecordGpsPositionInput } from './dto/record-gps-position.input';
 import { GpsPosition } from './entities/gps-position.entity';
 import { MovementHistoryPagination } from './entities/movement-history-pagination.entity';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { JwtPayload } from './jwt.strategy';
-import { Roles } from './roles.decorator';
-import { RolesGuard } from './roles.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtPayload } from './strategies/jwt.strategy';
+import { Roles } from './decorators/roles.decorator';
+import { RolesGuard } from './guards/roles.guard';
 import { VehicleService } from './vehicle.service';
 
 @Resolver()
@@ -22,7 +22,6 @@ export class GpsPositionResolver {
   async recordGpsPosition(
     @Args('vehicleId') vehicleId: string,
     @Args('input') input: RecordGpsPositionInput,
-    @CurrentUser() user: JwtPayload,
   ) {
     return this.vehicleService.recordPosition(vehicleId, input);
   }

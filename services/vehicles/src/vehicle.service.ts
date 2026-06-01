@@ -4,7 +4,7 @@ import { CreateVehicleInput } from './dto/create-vehicle.input';
 import { PaginationInput } from './dto/pagination.input';
 import { RecordGpsPositionInput } from './dto/record-gps-position.input';
 import { VehicleFilterInput } from './dto/vehicle-filter.input';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from './providers/prisma.service';
 
 @Injectable()
 export class VehicleService {
