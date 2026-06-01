@@ -8,6 +8,8 @@
     "build:vehicles": "npm run build -w services/vehicles",
     "dev:vehicles": "npm run start:dev -w services/vehicles",
     "build:traffic": "npm run build -w services/traffic",
-    "dev:traffic": "npm run start:dev -w services/traffic"
+    "dev:traffic": "npm run start:dev -w services/traffic",
+    "build:incidents": "npm run build -w services/incidents",
+    "dev:incidents": "npm run start:dev -w services/incidents"
   }
 }
