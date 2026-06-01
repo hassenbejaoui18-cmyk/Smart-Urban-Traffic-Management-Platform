@@ -25,13 +25,17 @@ Unit 2 — Vehicle service — implemented, migration applied, build passes
 
 ## In Progress
 
-- **Unit 4** — Incident service scaffolded, Prisma schema created (IncidentType, IncidentStatus enums + Incident model), service/resolver/module implemented with strict status transitions (REPORTED → IN_PROGRESS → RESOLVED), ownership scoping, filtering by status/type/zoneId. Build passes. Migration not yet applied.
+- **Unit 5** — Notification service scaffolded, Prisma schema created (TriggerType enum + Notification model), service/resolver/module implemented with create, list (filterable by isRead), markAsRead, markAllAsRead. Build passes. Migration not yet applied.
 
 ## Next Up
 
-1. **Unit 5** — Notification service (send, list, mark-read)
-2. **Unit 6** — GraphQL Gateway + cross-service event wiring
-3. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
+1. **Unit 6** — GraphQL Gateway + cross-service event wiring
+2. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
+
+## Changes
+
+- JSDoc file-level rule added to `code-standards.md`: JSDoc must be placed **after** all import statements (was previously top-of-file).
+- Notification service (16 source files) follows the new JSDoc-after-imports rule.
 
 ## Open Questions
 
