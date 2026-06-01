@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NOTIFICATION_DATABASE_URL")
+}
+
+enum TriggerType {
+  INCIDENT
+  ZONE_ALERT
+}
+
+model Notification {
+  id          String      @id @default(uuid())
+  userId      String      @map("user_id")
+  title       String
+  message     String      @db.Text
+  isRead      Boolean     @default(false) @map("is_read")
+  triggerType TriggerType @map("trigger_type")
+  triggerId   String      @map("trigger_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
