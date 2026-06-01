@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { User } from './entities/user.entity';
+import { User } from '../entities/user.entity';
 
 /**
  * Decorator: @CurrentUser

@@ -26,27 +26,47 @@
 - Use `class-validator` + `class-transformer` decorators on DTO / `InputType` classes for input validation.
 - Apply `ValidationPipe` globally with `{ whitelist: true, forbidNonWhitelisted: true, transform: true }`.
 
-### Preferred
+### Resolver — Preferred
+
+Resolvers must be thin: they parse request context, apply guards/decorators, delegate to a service, and return the result. Each method has a file-level JSDoc on the class and a single step comment delegating to the service.
 
 ```typescript
-// ✅ Thin resolver
-@Resolver(() => Vehicle)
-export class VehicleResolver {
-  constructor(private readonly vehicleService: VehicleService) {}
+/**
+ * Resolver: AuthResolver
+ * ----------------------
+ * GraphQL resolver for authentication operations.
+ * Exposes register, login, and me queries/mutations.
+ * Delegates all business logic to AuthService.
+ */
+@Resolver()
+export class AuthResolver {
+  constructor(private readonly authService: AuthService) {}
 
-  @Query(() => [Vehicle])
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'OPERATOR')
-  async vehicles(): Promise<Vehicle[]> {
-    return this.vehicleService.findAll();
+  @Mutation(() => AuthPayload)
+  async register(@Args('input') input: RegisterInput) {
+    // ++++++++++ Step 1: Delegate registration to AuthService +++++++++++
+    return this.authService.register(input);
+  }
+
+  @Mutation(() => AuthPayload)
+  async login(@Args('input') input: LoginInput) {
+    // ++++++++++ Step 1: Delegate login to AuthService +++++++++++
+    return this.authService.login(input);
+  }
+
+  @Query(() => User)
+  @UseGuards(JwtAuthGuard)
+  async me(@CurrentUser() user: User) {
+    // ++++++++++ Step 1: Delegate profile retrieval to AuthService +++++++++++
+    return this.authService.me(user.id);
   }
 }
 ```
 
-### Discouraged
+### Resolver — Discouraged
 
 ```typescript
-// ❌ Business logic in resolver
+// ❌ Business logic in resolver, no JSDoc, no step comments
 @Query(() => [Vehicle])
 async vehicles(@Context() ctx: any) {
   const user = ctx.req.user;
@@ -58,27 +78,108 @@ async vehicles(@Context() ctx: any) {
 }
 ```
 
+### Service — Preferred
+
+Services contain all domain logic. Each public method must have JSDoc with `@param` and `@returns`, and step comments breaking down the internal flow.
+
+```typescript
+/**
+ * Service: AuthService
+ * --------------------
+ * Handles user registration, login, and profile retrieval.
+ * Uses bcrypt for password hashing and JwtService for token signing.
+ */
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtService,
+  ) {}
+
+  /**
+   * Register Service
+   * ----------------
+   * Registers a new user with the given email and password.
+   * Checks for duplicate email, hashes the password, creates the user,
+   * and returns a signed JWT along with the user object.
+   *
+   * @param {RegisterInput} input - The registration input containing email and password.
+   * @returns {Promise<{ token: string; user: User }>} - The signed JWT and created user.
+   * @throws {ConflictException} - If the email is already registered.
+   */
+  async register(input: RegisterInput) {
+    // ++++++++++ Step 1: Check if email is already registered +++++++++++
+    const existing = await this.prisma.user.findUnique({
+      where: { email: input.email },
+    });
+    if (existing) {
+      throw new ConflictException('Email is already registered');
+    }
+
+    // ++++++++++ Step 2: Hash the password with bcrypt +++++++++++
+    const passwordHash = await bcrypt.hash(input.password, 12);
+
+    // ++++++++++ Step 3: Create the user in the database +++++++++++
+    const user = await this.prisma.user.create({
+      data: {
+        email: input.email,
+        passwordHash,
+        role: Role.OPERATOR,
+      },
+    });
+
+    // ++++++++++ Step 4: Sign a JWT for the new user +++++++++++
+    const token = this.jwt.sign({ sub: user.id, role: user.role });
+
+    // ++++++++++ Step 5: Return token and user data +++++++++++
+    return { token, user };
+  }
+}
+```
+
+### Service — Discouraged
+
+```typescript
+// ❌ No JSDoc, no step comments, unclear flow
+@Injectable()
+export class AuthService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async register(input: any) {
+    return this.prisma.user.create({ data: input });
+  }
+}
+```
+
 ## Project Structure and File Organization
 
 ```
 services/<service-name>/
 ├── src/
-│   ├── <domain>.module.ts
-│   ├── <domain>.resolver.ts
-│   ├── <domain>.service.ts
-│   ├── <domain>.guard.ts         (if service-specific auth)
-│   ├── dto/
+│   ├── <domain>.module.ts          # Module definition
+│   ├── <domain>.resolver.ts        # GraphQL entry point (thin)
+│   ├── <domain>.service.ts         # Domain logic
+│   ├── main.ts                     # Bootstrap
+│   ├── guards/                     # Auth & authorization guards
+│   │   ├── jwt-auth.guard.ts
+│   │   └── roles.guard.ts
+│   ├── decorators/                 # Custom parameter/method decorators
+│   │   ├── current-user.decorator.ts
+│   │   └── roles.decorator.ts
+│   ├── strategies/                 # Passport strategies
+│   │   └── jwt.strategy.ts
+│   ├── providers/                  # Shared infrastructure (Prisma, etc.)
+│   │   ├── prisma.module.ts
+│   │   └── prisma.service.ts
+│   ├── dto/                        # Input validation DTOs
 │   │   ├── create-<entity>.input.ts
 │   │   ├── update-<entity>.input.ts
 │   │   └── <entity>-filter.input.ts
-│   ├── entities/
-│   │   └── <entity>.ts           (@ObjectType decorated)
-│   ├── interfaces/
-│   │   └── <entity>-repository.interface.ts
-│   └── common/
-│       ├── decorators/
-│       ├── filters/
-│       └── pipes/
+│   ├── entities/                   # GraphQL @ObjectType decorated
+│   │   └── <entity>.ts
+│   └── common/                     # Cross-cutting concerns
+│       └── filters/
+│           └── graphql-exception.filter.ts
 ├── prisma/
 │   ├── schema.prisma
 │   └── migrations/
@@ -106,7 +207,7 @@ gateway/
 - **GraphQL fields**: `camelCase` — `licensePlate`, `recordedAt`, `isRead`.
 - **Database columns**: `snake_case` — `license_plate`, `recorded_at`, `owner_id`.
 - **Environment variables**: `SCREAMING_SNAKE_CASE` — `JWT_SECRET`, `DATABASE_URL`, `AUTH_SERVICE_URL`.
-- **Folders**: `kebab-case` — `dto/`, `entities/`, `common/`.
+- **Folders**: `kebab-case` — `guards/`, `decorators/`, `strategies/`, `providers/`, `dto/`, `entities/`, `common/`.
 - **Enum values**: `SCREAMING_SNAKE_CASE` — `ACCIDENT`, `ROAD_CLOSED`, `IN_PROGRESS`.
 
 ## Architectural Patterns

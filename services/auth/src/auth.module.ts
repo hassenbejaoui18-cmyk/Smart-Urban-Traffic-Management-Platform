@@ -10,9 +10,9 @@ import ms from 'ms';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
 import { GraphqlExceptionFilter } from './common/filters/graphql-exception.filter';
-import { JwtStrategy } from './jwt.strategy';
-import { PrismaModule } from './prisma.module';
-import { RolesGuard } from './roles.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { PrismaModule } from './providers/prisma.module';
+import { RolesGuard } from './guards/roles.guard';
 
 /**
  * Module: AuthModule

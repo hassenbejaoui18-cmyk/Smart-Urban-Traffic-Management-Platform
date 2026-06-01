@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Role } from '@prisma/client';
-import { User } from './entities/user.entity';
+import { User } from '../entities/user.entity';
 
 /**
  * Strategy: JwtStrategy
@@ -23,6 +23,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   /**
+   * Validate
+   * --------
    * Returns a partial User object from the verified JWT payload.
    *
    * @param {{ sub: string; role: Role }} payload - Decoded JWT payload.

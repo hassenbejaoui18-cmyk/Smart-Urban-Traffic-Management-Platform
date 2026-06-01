@@ -13,6 +13,7 @@ Unit 2 — Vehicle service — implemented, migration applied, build passes
 - `context/architecture.md` — written with stack table, system boundaries, storage model, auth model, invariants (6 rules)
 - `context/code-standards.md` — written with NestJS/TypeScript conventions, file organization, naming, patterns, error handling, testing, Prisma standards, preferred vs discouraged examples, README structure requirements, JSDoc file-level documentation rules
 - JSDoc file-level comments and public method docs added to all 18 auth service source files
+- Auth service reorganized into layer-based structure: `guards/`, `decorators/`, `strategies/`, `providers/`, `dto/`, `entities/`, `common/`
 - `context/ai-workflow-rules.md` — written with spec-driven approach, scoping rules, split conditions, missing requirements policy, protected files, verification checklist
 - `ui-context.md` skipped — frontend is a bonus; will create later if needed
 - Framework confirmed: NestJS (code-first GraphQL, Prisma, PostgreSQL)
