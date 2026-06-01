@@ -14,6 +14,14 @@ import { JwtStrategy } from './jwt.strategy';
 import { PrismaModule } from './prisma.module';
 import { RolesGuard } from './roles.guard';
 
+/**
+ * Module: AuthModule
+ * -----------------
+ * Root module for the Auth microservice.
+ * Configures GraphQL (code-first), JWT authentication,
+ * Passport strategy, Prisma database access, and global
+ * exception filtering.
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),

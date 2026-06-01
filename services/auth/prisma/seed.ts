@@ -1,6 +1,17 @@
 import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
+/**
+ * Seed Script
+ * -----------
+ * Creates the default admin user for development.
+ * Skips if the admin email already exists (idempotent).
+ *
+ * Admin credentials:
+ *   Email:    admin@smarttraffic.com
+ *   Password: admin1234
+ */
+
 const prisma = new PrismaClient();
 
 async function main() {

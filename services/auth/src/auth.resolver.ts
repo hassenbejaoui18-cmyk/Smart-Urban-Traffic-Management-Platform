@@ -8,6 +8,13 @@ import { AuthPayload } from './entities/auth-payload.entity';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
+/**
+ * Resolver: AuthResolver
+ * ----------------------
+ * GraphQL resolver for authentication operations.
+ * Exposes register, login, and me queries/mutations.
+ * Delegates all business logic to AuthService.
+ */
 @Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}

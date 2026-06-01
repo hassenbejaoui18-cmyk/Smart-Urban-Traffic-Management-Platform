@@ -11,7 +11,8 @@ Unit 2 — Vehicle service — implemented, migration applied, build passes
 - `.gitignore` updated (ignores `Six-File+Context+Methodology/`, common NestJS artifacts, env files)
 - `context/project-overview.md` — written with overview, goals, user flow, features, in/out of scope, success criteria
 - `context/architecture.md` — written with stack table, system boundaries, storage model, auth model, invariants (6 rules)
-- `context/code-standards.md` — written with NestJS/TypeScript conventions, file organization, naming, patterns, error handling, testing, Prisma standards, preferred vs discouraged examples
+- `context/code-standards.md` — written with NestJS/TypeScript conventions, file organization, naming, patterns, error handling, testing, Prisma standards, preferred vs discouraged examples, README structure requirements, JSDoc file-level documentation rules
+- JSDoc file-level comments and public method docs added to all 18 auth service source files
 - `context/ai-workflow-rules.md` — written with spec-driven approach, scoping rules, split conditions, missing requirements policy, protected files, verification checklist
 - `ui-context.md` skipped — frontend is a bonus; will create later if needed
 - Framework confirmed: NestJS (code-first GraphQL, Prisma, PostgreSQL)
@@ -21,7 +22,7 @@ Unit 2 — Vehicle service — implemented, migration applied, build passes
 
 ## In Progress
 
-- README documentation overhaul — added Architecture Overview + Data Flow sections to root README, auth service README, and vehicle service README per new code-standards requirement
+- Nothing — ready for user review
 
 ## Next Up
 
