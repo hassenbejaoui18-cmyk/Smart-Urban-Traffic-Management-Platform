@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("TRAFFIC_DATABASE_URL")
+}
+
+enum CongestionLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Zone {
+  id        String            @id @default(uuid())
+  name      String            @unique
+  boundary  String?           @db.Text
+  snapshots DensitySnapshot[]
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  @@map("zones")
+}
+
+model DensitySnapshot {
+  id             String          @id @default(uuid())
+  zoneId         String          @map("zone_id")
+  zone           Zone            @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  vehicleCount   Int             @map("vehicle_count")
+  classification CongestionLevel
+  computedAt     DateTime        @default(now()) @map("computed_at")
+
+  @@index([zoneId, computedAt])
+  @@map("density_snapshots")
+}
