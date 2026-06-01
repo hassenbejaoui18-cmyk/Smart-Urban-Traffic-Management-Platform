@@ -298,7 +298,14 @@ For the root README, the Data Flow covers end-to-end request flow across all ser
 
 ### JSDoc File-Level Structure
 
+File-level JSDoc MUST be placed **after** all import statements, just before the
+first exported declaration (class, function, enum, or constant). This keeps the
+documentation adjacent to what it describes and avoids visual noise at the top
+of the file.
+
 ```typescript
+import { ... } from '...';
+
 /**
  * File: <filename>
  * -----------------
