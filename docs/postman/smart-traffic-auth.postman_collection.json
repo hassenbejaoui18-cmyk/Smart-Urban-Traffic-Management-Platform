@@ -215,11 +215,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "mutation RecordGps($vehicleId: ID!, $input: GpsInput!) {\n  recordGpsPosition(vehicleId: $vehicleId, input: $input) {\n    id latitude longitude recordedAt\n  }\n}",
-                "variables": "{\n  \"vehicleId\": \"{{vehicleId}}\",\n  \"input\": {\n    \"latitude\": 48.8566,\n    \"longitude\": 2.3522,\n    \"recordedAt\": \"2026-06-02T12:00:00Z\"\n  }\n}"
-              }
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { recordGpsPosition(vehicleId: \\\"{{vehicleId}}\\\", input: { latitude: 48.8566, longitude: 2.3522, recordedAt: \\\"2026-06-02T12:00:00Z\\\" }) { id latitude longitude recordedAt } }\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
@@ -233,11 +230,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "query MovementHistory($vehicleId: ID!) {\n  movementHistory(vehicleId: $vehicleId) {\n    items { id latitude longitude recordedAt }\n    total\n  }\n}",
-                "variables": "{\n  \"vehicleId\": \"{{vehicleId}}\"\n}"
-              }
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"{ movementHistory(vehicleId: \\\"{{vehicleId}}\\\") { items { id latitude longitude recordedAt } total } }\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
@@ -313,11 +307,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "mutation UpdateStatus($id: ID!, $status: IncidentStatus!) {\n  updateIncidentStatus(id: $id, input: { status: $status }) {\n    id status\n  }\n}",
-                "variables": "{\n  \"id\": \"{{incidentId}}\",\n  \"status\": \"IN_PROGRESS\"\n}"
-              }
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { updateIncidentStatus(id: \\\"{{incidentId}}\\\", input: { status: IN_PROGRESS }) { id status } }\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
@@ -331,11 +322,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "mutation ResolveIncident($id: ID!) {\n  updateIncidentStatus(id: $id, input: { status: RESOLVED }) {\n    id status\n  }\n}",
-                "variables": "{\n  \"id\": \"{{incidentId}}\"\n}"
-              }
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { updateIncidentStatus(id: \\\"{{incidentId}}\\\", input: { status: RESOLVED }) { id status } }\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
@@ -405,11 +393,8 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
-              "mode": "graphql",
-              "graphql": {
-                "query": "mutation MarkAsRead($id: ID!) {\n  markNotificationAsRead(id: $id) {\n    id isRead\n  }\n}",
-                "variables": "{\n  \"id\": \"{{notificationId}}\"\n}"
-              }
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { markNotificationAsRead(id: \\\"{{notificationId}}\\\") { id isRead } }\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
