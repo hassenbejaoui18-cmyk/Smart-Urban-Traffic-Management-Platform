@@ -1,7 +1,10 @@
 {
   "name": "smart-urban-traffic-management",
   "private": true,
-  "workspaces": ["services/*", "gateway"],
+  "workspaces": [
+    "services/*",
+    "gateway"
+  ],
   "scripts": {
     "build:auth": "npm run build -w services/auth",
     "dev:auth": "npm run start:dev -w services/auth",
@@ -14,6 +17,16 @@
     "build:notifications": "npm run build -w services/notifications",
     "dev:notifications": "npm run start:dev -w services/notifications",
     "build:gateway": "npm run build -w gateway",
-    "dev:gateway": "npm run start:dev -w gateway"
+    "dev:gateway": "npm run start:dev -w gateway",
+    "build:all": "npm run build:auth && npm run build:vehicles && npm run build:traffic && npm run build:incidents && npm run build:notifications && npm run build:gateway",
+    "prisma:generate:all": "npm run prisma:generate -w services/auth && npm run prisma:generate -w services/vehicles && npm run prisma:generate -w services/traffic && npm run prisma:generate -w services/incidents && npm run prisma:generate -w services/notifications",
+    "dev:all": "concurrently -n auth,vehicles,traffic,incidents,notifications,gateway -c blue,green,yellow,magenta,cyan,red \"npm run dev:auth\" \"npm run dev:vehicles\" \"npm run dev:traffic\" \"npm run dev:incidents\" \"npm run dev:notifications\" \"npm run dev:gateway\"",
+    "postinstall": "npm run prisma:generate:all"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "@as-integrations/express5": "^1.1.2"
   }
 }

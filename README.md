@@ -6,37 +6,32 @@ A distributed web-service platform for intelligent urban traffic management, bui
 
 ### High-Level Architecture
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                         Client Layer                                 │
-├──────────────────────────────────────────────────────────────────────┤
-│               Apollo Sandbox / HTTP Client (GraphQL)                 │
-└────────────────────────────────┬─────────────────────────────────────┘
-                                 │
-                                 ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                      GraphQL API Gateway (Port 4000)                 │
-│  ┌────────────────────────────────────────────────────────────────┐  │
-│  │  • Auth guards (JWT validation, role checks)                   │  │
-│  │  • Schema composition from all services                        │  │
-│  │  • Request routing to the appropriate downstream service       │  │
-│  └────────────────────────────────────────────────────────────────┘  │
-└──────────────────────────┬──────────────────┬─────────────────────────┘
-                           │                  │
-          ┌────────────────┼──────┬───────────┼──────┬────────────────┐
-          │                │      │           │      │                │
-          ▼                ▼      ▼           ▼      ▼                ▼
-   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-   │  Auth    │    │ Vehicles │    │ Traffic  │    │Incidents │    │Notificat.│
-   │ :4001    │    │ :4002    │    │ :4003    │    │ :4004    │    │ :4005    │
-   └────┬─────┘    └────┬─────┘    └────┬─────┘    └────┬─────┘    └────┬─────┘
-        │               │               │               │               │
-        ▼               ▼               ▼               ▼               ▼
-   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-   │PostgreSQL│    │PostgreSQL│    │PostgreSQL│    │PostgreSQL│    │PostgreSQL│
-   │ (users)  │    │(vehicles,│    │ (zones,  │    │(incidents│    │(notifica.│
-   │          │    │ gps_pos.)│    │ density) │    │   )      │    │   )      │
-   └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
+```mermaid
+graph TB
+    Client["Client Layer<br/>Apollo Sandbox / HTTP Client"]
+    Gateway["GraphQL API Gateway (Port 4000)<br/>JWT auth · Schema composition · Routing"]
+    Auth["Auth Service<br/>Port 4001"]
+    Vehicles["Vehicles Service<br/>Port 4002"]
+    Traffic["Traffic Service<br/>Port 4003"]
+    Incidents["Incidents Service<br/>Port 4004"]
+    Notifications["Notifications Service<br/>Port 4005"]
+    DBAuth[("PostgreSQL<br/>users")]
+    DBVehicles[("PostgreSQL<br/>vehicles, gps_positions")]
+    DBTraffic[("PostgreSQL<br/>zones, density_snapshots")]
+    DBIncidents[("PostgreSQL<br/>incidents")]
+    DBNotifications[("PostgreSQL<br/>notifications")]
+
+    Client -->|GraphQL| Gateway
+    Gateway --> Auth
+    Gateway --> Vehicles
+    Gateway --> Traffic
+    Gateway --> Incidents
+    Gateway --> Notifications
+    Auth --- DBAuth
+    Vehicles --- DBVehicles
+    Traffic --- DBTraffic
+    Incidents --- DBIncidents
+    Notifications --- DBNotifications
 ```
 
 ### Component Descriptions
@@ -53,6 +48,116 @@ A distributed web-service platform for intelligent urban traffic management, bui
    - **Notifications** — Push-style notification creation, listing, and mark-as-read.
 
 4. **PostgreSQL Databases** — Each service has its own dedicated database/schema. Services never access another service's database directly — all cross-service data access is routed through the gateway.
+
+### Data Model (Class Diagram)
+
+```mermaid
+classDiagram
+    class User {
+        +String id
+        +String email
+        +String passwordHash
+        +Role role
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class Role {
+        ADMIN
+        OPERATOR
+    }
+
+    class Vehicle {
+        +String id
+        +String licensePlate
+        +VehicleType type
+        +String zoneId
+        +String ownerId
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class VehicleType {
+        CAR
+        TRUCK
+        MOTORCYCLE
+        BUS
+    }
+    class GpsPosition {
+        +String id
+        +String vehicleId
+        +Float latitude
+        +Float longitude
+        +DateTime recordedAt
+        +DateTime createdAt
+    }
+
+    class Zone {
+        +String id
+        +String name
+        +String boundary
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class DensitySnapshot {
+        +String id
+        +String zoneId
+        +Int vehicleCount
+        +CongestionLevel classification
+        +DateTime computedAt
+    }
+    class CongestionLevel {
+        LOW
+        MEDIUM
+        HIGH
+    }
+
+    class Incident {
+        +String id
+        +IncidentType type
+        +IncidentStatus status
+        +String description
+        +Float latitude
+        +Float longitude
+        +String zoneId
+        +String reportedBy
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+    class IncidentType {
+        ACCIDENT
+        CONSTRUCTION
+        ROAD_CLOSED
+        TRAFFIC_JAM
+    }
+    class IncidentStatus {
+        REPORTED
+        IN_PROGRESS
+        RESOLVED
+    }
+
+    class Notification {
+        +String id
+        +String userId
+        +String title
+        +String message
+        +Boolean isRead
+        +TriggerType triggerType
+        +String triggerId
+        +DateTime createdAt
+    }
+    class TriggerType {
+        INCIDENT
+        ZONE_ALERT
+    }
+
+    User --> Role : has
+    Vehicle --> VehicleType : typed as
+    Vehicle "1" --> "*" GpsPosition : records
+    Zone "1" --> "*" DensitySnapshot : has
+    Zone --> CongestionLevel : classified as (via snapshot)
+    Incident --> IncidentType : typed as
+    Incident --> IncidentStatus : transitions
+    Notification --> TriggerType : triggered by
+```
 
 ### Internal Service Architecture (Layer-Based)
 
@@ -136,16 +241,27 @@ Each microservice follows a consistent layer-based pattern within its `src/` dir
 
 ### End-to-End Request Flow
 
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant Guards
+    participant Resolver
+    participant Service
+    participant DB as PostgreSQL
+
+    Client->>Gateway: GraphQL query/mutation
+    Gateway->>Guards: JwtAuthGuard + RolesGuard
+    Guards-->>Gateway: user context attached
+    Gateway->>Resolver: parsed args + user
+    Resolver->>Service: delegate business logic
+    Service->>DB: Prisma query
+    DB-->>Service: result
+    Service-->>Resolver: domain result
+    Resolver-->>Gateway: GraphQL response
+    Gateway-->>Client: JSON response
 ```
-┌──────────┐   ┌──────────┐   ┌──────────────────────────────────────────────┐
-│  Client   │   │ Gateway   │   │              Target Service                  │
-│(GraphQL)  │   │ :4000     │   │                                                │
-└─────┬────┘   └─────┬────┘   └────────────────────────────────────────────────┘
-      │              │        ┌────────┐  ┌──────────┐  ┌─────────┐  ┌────────┐
-      │              │        │Guards  │──│ Resolver │──│ Service │──│Prisma/ │
-      └──────────────┴────────│(auth + │  │ (thin)   │  │(business│  │  DB    │
-                              │  role)  │  │          │  │  logic)  │  │(PG)    │
-                              └────────┘  └──────────┘  └─────────┘  └────────┘
+
 ```
 
 1. **Request arrives** — A GraphQL query/mutation hits the gateway (`http://localhost:4000/graphql`).
@@ -167,6 +283,83 @@ Each microservice follows a consistent layer-based pattern within its `src/` dir
 9. **Database** — PostgreSQL persists and returns domain data.
 
 10. **Response** — Results flow back up the chain: DB → Prisma → Service → Resolver → Gateway → Client. Errors are caught by the global `GraphqlExceptionFilter` and returned in a consistent GraphQL error shape.
+
+### Core Business Flow (Sequence Diagram)
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway
+    participant Auth
+    participant Vehicles
+    participant Traffic
+    participant Incidents
+    participant Notifications
+    participant DB as PostgreSQL (per service)
+
+    Note over Client,DB: 1. Register & Login
+    Client->>Gateway: register(email, password)
+    Gateway->>Auth: register
+    Auth->>DB: INSERT users
+    DB-->>Auth: user
+    Auth-->>Gateway: { token, user }
+    Gateway-->>Client: { token, user }
+
+    Client->>Gateway: login(email, password)
+    Gateway->>Auth: login
+    Auth->>DB: SELECT users
+    DB-->>Auth: user
+    Auth-->>Gateway: { token }
+    Gateway-->>Client: { token }
+
+    Note over Client,DB: 2. Create Vehicle
+    Client->>Gateway: createVehicle(input) [JWT]
+    Gateway->>Vehicles: createVehicle
+    Vehicles->>DB: INSERT vehicles
+    DB-->>Vehicles: vehicle
+    Vehicles-->>Gateway: vehicle
+    Gateway-->>Client: vehicle
+
+    Note over Client,DB: 3. Record GPS Position
+    Client->>Gateway: recordGpsPosition(vehicleId, input) [JWT]
+    Gateway->>Vehicles: recordGpsPosition
+    Vehicles->>DB: INSERT gps_positions
+    DB-->>Vehicles: position
+    Vehicles-->>Gateway: position
+    Gateway-->>Client: position
+
+    Note over Client,DB: 4. Compute Traffic Density
+    Client->>Gateway: computeDensity [JWT, ADMIN]
+    Gateway->>Traffic: computeDensity
+    Traffic->>Vehicles: HTTP | vehicles(zoneId)
+    Vehicles-->>Traffic: vehicle list
+    Traffic->>DB: INSERT density_snapshots
+    DB-->>Traffic: snapshots
+    Traffic-->>Gateway: snapshots
+    Gateway-->>Client: snapshots
+
+    Note over Client,DB: 5. Report Incident
+    Client->>Gateway: createIncident(input) [JWT]
+    Gateway->>Incidents: createIncident
+    Incidents->>DB: INSERT incidents
+    Incidents->>Notifications: HTTP | createNotification
+    Notifications->>DB: INSERT notifications
+    DB-->>Notifications: notification
+    Notifications-->>Incidents: { id }
+    Incidents-->>Gateway: incident
+    Gateway-->>Client: incident
+
+    Note over Client,DB: 6. Update Incident Status
+    Client->>Gateway: updateIncidentStatus(id, status) [JWT]
+    Gateway->>Incidents: updateIncidentStatus
+    Incidents->>DB: UPDATE incidents
+    Incidents->>Notifications: HTTP | createNotification
+    Notifications->>DB: INSERT notifications
+    DB-->>Notifications: notification
+    Notifications-->>Incidents: { id }
+    Incidents-->>Gateway: incident
+    Gateway-->>Client: incident
+```
 
 ### Cross-Service Communication
 
@@ -205,60 +398,27 @@ The Incident service emits an event (via `@nestjs/event-emitter` or direct HTTP 
 
 ## Getting Started
 
+See [`GETTING_STARTED.md`](GETTING_STARTED.md) for a full walkthrough.
+
+### Quick start
+
+```bash
+# One-command setup (creates databases, generates env files,
+# installs deps, syncs schemas, seeds admin user, builds all services)
+./setup.sh
+
+# Start all services + gateway
+./setup.sh
+# or, to set up without starting:
+./setup.sh --skip-start
+npm run dev:all
+```
+
 ### Prerequisites
 
 - Node.js 18+
 - PostgreSQL 14+
 - npm
-
-### 1. Clone and install
-
-```bash
-git clone <repo-url>
-cd smart-urban-traffic-management
-npm install
-```
-
-### 2. Configure environment variables
-
-Copy the example env file for each service (or configure as needed):
-
-```bash
-cp .env.example services/auth/.env
-```
-
-Edit each `.env` with your PostgreSQL connection strings and secrets.
-
-### 3. Set up databases
-
-Create a PostgreSQL database per service (or use separate schemas), then run migrations:
-
-```bash
-# Auth service
-cd services/auth
-npx prisma migrate dev
-npx prisma db seed
-cd ../..
-```
-
-The seed script creates an admin user:
-- Email: `admin@smarttraffic.com`
-- Password: `admin1234`
-
-### 4. Start a service
-
-```bash
-# Auth service (development with hot-reload)
-npm run dev:auth
-
-# Or from any service directory:
-cd services/auth
-npm run start:dev
-```
-
-### 5. Access GraphQL playground
-
-Open the Apollo Studio Sandbox at `http://localhost:<service-port>/graphql`.
 
 ## Project Structure
 
@@ -300,7 +460,6 @@ Open the Apollo Studio Sandbox at `http://localhost:<service-port>/graphql`.
 │   ├── incidents/                    # Incident service (Unit 4)
 │   └── notifications/                # Notification service (Unit 5)
 ├── context/                          # Project context & specs for AI-assisted dev
-├── docs/                             # Deliverables (UML, Postman, queries)
 ├── package.json                      # npm workspaces root
 └── tsconfig.base.json                # Shared TypeScript config
 ```
@@ -312,14 +471,14 @@ Open the Apollo Studio Sandbox at `http://localhost:<service-port>/graphql`.
 The project is built incrementally across 7 units:
 
 | Unit | What | Status |
-|---|---|---|
+|---|---|---|---|
 | 1 | Monorepo scaffold + Auth service | ✅ Done |
 | 2 | Vehicle service | ✅ Done |
-| 3 | Traffic service | ⏳ Pending |
-| 4 | Incident service | ⏳ Pending |
-| 5 | Notification service | ⏳ Pending |
-| 6 | GraphQL Gateway + cross-service wiring | ⏳ Pending |
-| 7 | Deliverables (READMEs, UML, Postman, queries) | ⏳ Pending |
+| 3 | Traffic service | ✅ Done |
+| 4 | Incident service | ✅ Done |
+| 5 | Notification service | ✅ Done |
+| 6 | GraphQL Gateway + cross-service wiring | ✅ Done |
+| 7 | Deliverables (README, setup script, getting started) | ✅ Done |
 
 See `context/specs/00-build-plan.md` for details.
 

@@ -38,5 +38,8 @@ Mini_Projet_Web_Services_GraphQL*.pdf
 # Env example (keep the template but not real secrets)
 !.env.example
 
+# Auto-generated GraphQL schema files (NestJS code-first)
+schema.gql
+
 # Skipped context files (frontend is bonus)
 context/ui-context.md

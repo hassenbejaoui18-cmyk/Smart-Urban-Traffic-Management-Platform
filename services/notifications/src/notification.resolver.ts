@@ -41,7 +41,7 @@ export class NotificationResolver {
   @Query(() => [Notification])
   @Roles(Role.ADMIN, Role.OPERATOR)
   async notifications(
-    @Args('filter', { nullable: true }) filter: NotificationFilterInput | null,
+    @Args('filter', { nullable: true, type: () => NotificationFilterInput }) filter: NotificationFilterInput | null,
     @CurrentUser() user: JwtPayload,
   ) {
     // ++++++++++ Step 1: Delegate filtered listing to NotificationService +++++++++++

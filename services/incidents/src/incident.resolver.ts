@@ -51,7 +51,7 @@ export class IncidentResolver {
   @Query(() => [Incident])
   @Roles(Role.ADMIN, Role.OPERATOR)
   async incidents(
-    @Args('filter', { nullable: true }) filter: IncidentFilterInput | null,
+    @Args('filter', { nullable: true, type: () => IncidentFilterInput }) filter: IncidentFilterInput | null,
     @CurrentUser() user: JwtPayload,
   ) {
     return this.incidentService.findAll(filter, user.sub, user.role as Role);

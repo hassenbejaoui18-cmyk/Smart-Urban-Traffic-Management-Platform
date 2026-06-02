@@ -3,7 +3,7 @@ import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { IntrospectAndCompose } from '@apollo/gateway';
+import { IntrospectAndCompose, RemoteGraphQLDataSource } from '@apollo/gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import ms from 'ms';
@@ -31,6 +31,23 @@ import ms from 'ms';
             { name: 'notifications', url: 'http://localhost:4005/graphql' },
           ],
         }),
+        buildService({ url }) {
+          return new RemoteGraphQLDataSource({
+            url,
+            willSendRequest({ request, context }) {
+              const ctx = context as { req?: { headers?: Record<string, string | string[]> } };
+              const headers = ctx.req?.headers;
+              if (headers) {
+                for (const [key, value] of Object.entries(headers)) {
+                  if (value) {
+                    request.http?.headers.set(key, Array.isArray(value) ? value.join(', ') : value);
+                  }
+                }
+              }
+            },
+          });
+        },
+        serviceHealthCheck: false,
       },
     }),
     JwtModule.registerAsync({

@@ -34,7 +34,7 @@ export class VehicleResolver {
   @Query(() => [Vehicle])
   @Roles(Role.ADMIN, Role.OPERATOR)
   async vehicles(
-    @Args('filter', { nullable: true }) filter: VehicleFilterInput | null,
+    @Args('filter', { nullable: true, type: () => VehicleFilterInput }) filter: VehicleFilterInput | null,
     @CurrentUser() user: JwtPayload,
   ) {
     return this.vehicleService.findAll(filter, user.sub, user.role);

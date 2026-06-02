@@ -29,10 +29,11 @@ Unit 6 — GraphQL Gateway + cross-service wiring — complete
 - **Unit 5 complete** — Notification service on port 4005 with create, list (filterable by isRead), markAsRead, markAllAsRead, Prisma schema (`notifications` table)
 - Unit 6 spec at `context/specs/06-gateway.md`
 - **Unit 6 complete** — All 5 services switched to `ApolloFederationDriver`, primary entities decorated with `@Directive('@key(fields: "id")')`, Gateway service scaffolded on port 4000 with `IntrospectAndCompose`, Incident→Notification cross-service wiring via `NotificationClientService`, gateway scripts in root package.json, `.env.example` updated
+- **Unit 7 complete** — README updated with Mermaid class diagram (all 5 service entities + relationships) and sequence diagram (6-step end-to-end business flow); `setup.sh` created with database creation, env generation, npm install, prisma generate/push/seed, build, and optional `dev:all` start; `GETTING_STARTED.md` created with prerequisites, one-command setup, demo walkthrough, and troubleshooting; `concurrently` installed; `dev:all`, `build:all`, `prisma:generate:all` scripts added to root `package.json`
 
 ## Next Up
 
-1. **Unit 7** — Deliverables (UML diagrams, Postman, sample queries)
+1. **Unit 7** — Deliverables (README Mermaid diagrams, setup script, getting started guide) — ✅ Done
 
 ## Changes
 
@@ -42,6 +43,16 @@ Unit 6 — GraphQL Gateway + cross-service wiring — complete
 - All 5 primary entity `@ObjectType` classes annotated with `@Directive('@key(fields: "id")')`.
 - Gateway service created at `gateway/` with `ApolloGatewayDriver` + `IntrospectAndCompose`.
 - Incident service wired to Notification service via `NotificationClientService` (HTTP GraphQL).
+- Root `README.md`: ASCII architecture and data flow diagrams replaced with Mermaid diagrams; class diagram (all entities + enums) and business flow sequence diagram (6 steps, end-to-end) added; Getting Started section simplified to point to `GETTING_STARTED.md` and `setup.sh`; Build Units table updated to mark all 7 units as done.
+- `package.json`: `concurrently` installed; `dev:all`, `build:all`, `prisma:generate:all` scripts added; `postinstall` script runs `prisma:generate:all` to survive npm prune.
+- `setup.sh`: new file — one-command setup with `--skip-start` and `--db-user` flags.
+- `GETTING_STARTED.md`: new file — prerequisites, setup walkthrough, demo steps, troubleshooting.
+- `services/auth/prisma/seed.ts`: fixed import from `@prisma/client` to `@prisma/auth-client` (was using wrong client package).
+- `@as-integrations/express5`: installed as root dependency (required by NestJS v11 + Apollo Federation with Express 5).
+- `services/vehicles/src/vehicle.resolver.ts`, `services/incidents/src/incident.resolver.ts`, `services/notifications/src/notification.resolver.ts`: added `type: () => XxxFilterInput` to `@Args('filter', { nullable: true })` decorators to fix `UndefinedTypeError` (union `| null` breaks TypeScript reflection metadata).
+- All 5 `JwtAuthGuard` classes: overrode `getRequest()` to return `GqlExecutionContext.create(context).getContext().req` instead of the default `switchToHttp().getRequest()` (which returns `undefined` under `ApolloFederationDriver`, causing Passport crash at `IncomingMessageExt.logIn`).
+- `gateway/src/gateway.module.ts`: added `buildService` with `willSendRequest` that copies all headers from the incoming request context to the subgraph HTTP request; added `serviceHealthCheck: false` to prevent introspection timeout during startup.
+- `gateway/src/main.ts`: added retry loop (15 attempts, 3s apart) for gateway startup race condition with downstream subgraph services.
 
 ## Open Questions
 
