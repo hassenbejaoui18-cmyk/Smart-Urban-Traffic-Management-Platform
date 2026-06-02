@@ -57,6 +57,7 @@ Unit 6 — GraphQL Gateway + cross-service wiring — complete
 - `setup.sh`: added `lsof -ti:4000-4005 | xargs kill -9` before `npm run dev:all` to kill stale processes; removed `AUTH_JWT_SECRET` from `gateway/.env`.
 - `package.json`: added `cleanup:ports` script (`lsof ... xargs kill -9; sleep 1`) and made `dev:all` run `npm run cleanup:ports && concurrently ...` so stale ports are always killed regardless of how services are started.
 - All 5 subgraph `main.ts` files: added `startWithRetry` wrapper that catches `EADDRINUSE` and retries up to 10 times with 1s delay — self-heals if a stale process holds the port after cleanup.
+- `gateway/src/main.ts`: added `app.enableCors()` with `localhost:4000`, `studio.apollographql.com`, `localhost:3000` origins — Apollo Sandbox in-browser CORS preflight was returning `400 Bad Request`, causing the browser to strip the `Authorization` header from the actual request.
 
 ## Open Questions
 
