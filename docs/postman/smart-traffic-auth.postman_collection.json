@@ -1,90 +1,454 @@
 {
   "info": {
-    "name": "Smart Urban Traffic — Auth Service",
-    "description": "GraphQL operations for the Auth service.\n\nRun Login (Admin) first — its post-response script auto-sets the `token` variable.",
+    "name": "Smart Urban Traffic API",
+    "description": "Full GraphQL API collection for the Smart Urban Traffic Management system.\n\n**How to use:**\n1. Run **Login (Admin)** first — the JWT token auto-saves to `{{token}}`\n2. Subsequent requests use `Authorization: Bearer {{token}}` automatically\n3. Run **Create Zone → Create Vehicle → Record GPS → Compute Density → Create Incident → List Notifications** in order — IDs auto-chain\n\nAll requests go through the gateway at `http://localhost:4000/graphql`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:4001", "type": "string" },
-    { "key": "token", "value": "", "type": "string" }
+    { "key": "baseUrl", "value": "http://localhost:4000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "zoneId", "value": "", "type": "string" },
+    { "key": "vehicleId", "value": "", "type": "string" },
+    { "key": "incidentId", "value": "", "type": "string" },
+    { "key": "notificationId", "value": "", "type": "string" }
   ],
   "item": [
     {
-      "name": "Register",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "graphql",
-          "graphql": {
-            "query": "mutation Register($input: RegisterInput!) {\n  register(input: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
-            "variables": "{\n  \"input\": {\n    \"email\": \"operator@smarttraffic.com\",\n    \"password\": \"password123\"\n  }\n}"
+      "name": "Auth",
+      "description": "Authentication — register, login, and verify identity. Run Login first to save the JWT token automatically.",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Register($input: RegisterInput!) {\n  register(input: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"email\": \"operator@smarttraffic.com\",\n    \"password\": \"password123\"\n  }\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
         },
-        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
-      }
-    },
-    {
-      "name": "Login (Admin)",
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "var json = pm.response.json();",
-              "if (json.data && json.data.login) {",
-              "  pm.collectionVariables.set('token', json.data.login.token);",
-              "}"
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.login) {",
+                  "  pm.collectionVariables.set('token', json.data.login.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Login($input: LoginInput!) {\n  login(input: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"email\": \"admin@smarttraffic.com\",\n    \"password\": \"admin1234\"\n  }\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "type": "text/javascript"
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query Me {\n  me { id email role createdAt updatedAt }\n}",
+                "variables": ""
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "Register (Invalid Input)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation Register($input: RegisterInput!) {\n  register(input: $input) {\n    token\n    user { id email role }\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"email\": \"not-an-email\",\n    \"password\": \"short\"\n  }\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
         }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "graphql",
-          "graphql": {
-            "query": "mutation Login($input: LoginInput!) {\n  login(input: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
-            "variables": "{\n  \"input\": {\n    \"email\": \"admin@smarttraffic.com\",\n    \"password\": \"admin1234\"\n  }\n}"
-          }
-        },
-        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
-      }
+      ]
     },
     {
-      "name": "Me",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
-        "body": {
-          "mode": "graphql",
-          "graphql": {
-            "query": "query Me {\n  me { id email role createdAt updatedAt }\n}",
-            "variables": ""
+      "name": "Zones",
+      "description": "Traffic zone management — create zones and list existing ones. All requests go through the gateway and use the saved auth token.",
+      "item": [
+        {
+          "name": "Create Zone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.createZone) {",
+                  "  pm.collectionVariables.set('zoneId', json.data.createZone.id);",
+                  "} else if (json.errors && json.errors[0].message.indexOf('Unique constraint violation on name') !== -1) {",
+                  "  pm.sendRequest({",
+                  "    url: pm.collectionVariables.get('baseUrl') + '/graphql',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pm.collectionVariables.get('token') },",
+                  "    body: { mode: 'raw', raw: JSON.stringify({ query: 'query { zones { id name } }' }) }",
+                  "  }, function (err, res) {",
+                  "    if (!err) {",
+                  "      var zones = res.json().data.zones;",
+                  "      for (var i = 0; i < zones.length; i++) {",
+                  "        if (zones[i].name === 'Downtown') {",
+                  "          pm.collectionVariables.set('zoneId', zones[i].id);",
+                  "          break;",
+                  "        }",
+                  "      }",
+                  "    }",
+                  "  });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateZone($name: String!) {\n  createZone(input: { name: $name }) {\n    id name createdAt\n  }\n}",
+                "variables": "{\n  \"name\": \"Downtown\"\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
         },
-        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
-      }
+        {
+          "name": "List Zones",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  zones { id name }\n}",
+                "variables": ""
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        }
+      ]
     },
     {
-      "name": "Register (Invalid Input)",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "graphql",
-          "graphql": {
-            "query": "mutation Register($input: RegisterInput!) {\n  register(input: $input) {\n    token\n    user { id email role }\n  }\n}",
-            "variables": "{\n  \"input\": {\n    \"email\": \"not-an-email\",\n    \"password\": \"short\"\n  }\n}"
+      "name": "Vehicles",
+      "description": "Vehicle management — register vehicles, record GPS positions, and query movement history.",
+      "item": [
+        {
+          "name": "Create Vehicle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.createVehicle) {",
+                  "  pm.collectionVariables.set('vehicleId', json.data.createVehicle.id);",
+                  "} else if (json.errors && json.errors[0].message.indexOf('Unique constraint violation on license_plate') !== -1) {",
+                  "  pm.sendRequest({",
+                  "    url: pm.collectionVariables.get('baseUrl') + '/graphql',",
+                  "    method: 'POST',",
+                  "    header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pm.collectionVariables.get('token') },",
+                  "    body: { mode: 'raw', raw: JSON.stringify({ query: 'query { vehicles { id licensePlate } }' }) }",
+                  "  }, function (err, res) {",
+                  "    if (!err) {",
+                  "      var vehicles = res.json().data.vehicles;",
+                  "      for (var i = 0; i < vehicles.length; i++) {",
+                  "        if (vehicles[i].licensePlate === 'ABC-1234') {",
+                  "          pm.collectionVariables.set('vehicleId', vehicles[i].id);",
+                  "          break;",
+                  "        }",
+                  "      }",
+                  "    }",
+                  "  });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateVehicle($input: CreateVehicleInput!) {\n  createVehicle(input: $input) {\n    id licensePlate type ownerId\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"licensePlate\": \"ABC-1234\",\n    \"type\": \"CAR\"\n  }\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
           }
         },
-        "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
-      }
+        {
+          "name": "List Vehicles",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  vehicles { id licensePlate type zoneId ownerId }\n}",
+                "variables": ""
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "Record GPS Position",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation RecordGps($vehicleId: ID!, $input: GpsInput!) {\n  recordGpsPosition(vehicleId: $vehicleId, input: $input) {\n    id latitude longitude recordedAt\n  }\n}",
+                "variables": "{\n  \"vehicleId\": \"{{vehicleId}}\",\n  \"input\": {\n    \"latitude\": 48.8566,\n    \"longitude\": 2.3522,\n    \"recordedAt\": \"2026-06-02T12:00:00Z\"\n  }\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "Movement History",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query MovementHistory($vehicleId: ID!) {\n  movementHistory(vehicleId: $vehicleId) {\n    items { id latitude longitude recordedAt }\n    total\n  }\n}",
+                "variables": "{\n  \"vehicleId\": \"{{vehicleId}}\"\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Traffic",
+      "description": "Traffic analysis — compute density for all zones based on current GPS positions.",
+      "item": [
+        {
+          "name": "Compute Density",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  computeDensity { id zoneId vehicleCount classification }\n}",
+                "variables": ""
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incidents",
+      "description": "Incident management — report, update status, and list incidents. Creating an incident auto-generates a notification via cross-service wiring.",
+      "item": [
+        {
+          "name": "Create Incident",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.createIncident) {",
+                  "  pm.collectionVariables.set('incidentId', json.data.createIncident.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation CreateIncident($input: CreateIncidentInput!) {\n  createIncident(input: $input) {\n    id type status description latitude longitude createdAt\n  }\n}",
+                "variables": "{\n  \"input\": {\n    \"type\": \"ACCIDENT\",\n    \"description\": \"Multi-vehicle collision on Main St\",\n    \"latitude\": 48.8570,\n    \"longitude\": 2.3525\n  }\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "Update Incident Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation UpdateStatus($id: ID!, $status: IncidentStatus!) {\n  updateIncidentStatus(id: $id, input: { status: $status }) {\n    id status\n  }\n}",
+                "variables": "{\n  \"id\": \"{{incidentId}}\",\n  \"status\": \"IN_PROGRESS\"\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "Resolve Incident",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation ResolveIncident($id: ID!) {\n  updateIncidentStatus(id: $id, input: { status: RESOLVED }) {\n    id status\n  }\n}",
+                "variables": "{\n  \"id\": \"{{incidentId}}\"\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "List Incidents",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  incidents { id type status description createdAt }\n}",
+                "variables": ""
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "Notifications are auto-generated when incidents are created. View and mark them as read.",
+      "item": [
+        {
+          "name": "List Notifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.notifications && json.data.notifications.length > 0) {",
+                  "  pm.collectionVariables.set('notificationId', json.data.notifications[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  notifications { id title message isRead triggerType triggerId createdAt }\n}",
+                "variables": ""
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation MarkAsRead($id: ID!) {\n  markNotificationAsRead(id: $id) {\n    id isRead\n  }\n}",
+                "variables": "{\n  \"id\": \"{{notificationId}}\"\n}"
+              }
+            },
+            "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
+          }
+        }
+      ]
     }
   ]
 }
