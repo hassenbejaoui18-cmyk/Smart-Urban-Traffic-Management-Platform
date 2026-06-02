@@ -58,7 +58,9 @@ Unit 6 — GraphQL Gateway + cross-service wiring — complete
 - `package.json`: added `cleanup:ports` script (`lsof ... xargs kill -9; sleep 1`) and made `dev:all` run `npm run cleanup:ports && concurrently ...` so stale ports are always killed regardless of how services are started.
 - All 5 subgraph `main.ts` files: added `startWithRetry` wrapper that catches `EADDRINUSE` and retries up to 10 times with 1s delay — self-heals if a stale process holds the port after cleanup.
 - `gateway/src/main.ts`: added `app.enableCors()` with `localhost:4000`, `studio.apollographql.com`, `localhost:3000` origins — Apollo Sandbox in-browser CORS preflight was returning `400 Bad Request`, causing the browser to strip the `Authorization` header from the actual request.
-
+- `demo.sh`: created — one-command demo script that kills stale processes, starts all services, waits for gateway readiness, logs in as admin, and runs the full 8-step demo walkthrough (me, zone, vehicle, GPS, density, incident, status update, notifications). Idempotent — reuses existing data if present. Services stay running until Ctrl+C.
+- `smart-traffic-api.postman_collection.json`: created — Postman collection v2.1 with 6 folders (Auth, Zones, Vehicles, Traffic, Incidents, Notifications) and 14 requests. Features collection variables (`auth_token`, `zone_id`, `vehicle_id`, `incident_id`, `notification_id`) auto-populated via Postman test scripts. All authenticated requests use `Bearer {{auth_token}}`. GraphQL variables use `{{variable}}` syntax for chained IDs. Login test script saves token; entity creation tests save IDs; notification list test saves first notification ID.
+ 
 ## Open Questions
 
 - Threshold values for traffic density classification (Low / Medium / High) — not yet defined in the spec. Will pick defaults when implementing Traffic service.

@@ -1,0 +1,353 @@
+{
+  "info": {
+    "name": "Smart Traffic Management API",
+    "description": "Complete API collection for the Smart Traffic Management system. All requests go through the Apollo Gateway at port 4000.\n\n## How to use\n1. Import this collection into Postman (File → Import)\n2. Ensure services are running (`npm run dev:all` from project root)\n3. Run **Login** first — auth token is auto-saved\n4. Run remaining requests in order — entity IDs chain automatically\n\n## Flow\nLogin → Create Zone → Create Vehicle → Record GPS → Compute Density → Create Incident → Update Status → View Notifications\n\nSeed credentials: `admin@smarttraffic.com` / `admin1234`\n\n## Variables\nAll collection variables auto-populate via test scripts:\n- `auth_token` — set by Login\n- `zone_id` — set by Create Zone\n- `vehicle_id` — set by Create Vehicle\n- `incident_id` — set by Create Incident\n- `notification_id` — set by List Notifications",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:4000/graphql" },
+    { "key": "auth_token", "value": "" },
+    { "key": "zone_id", "value": "" },
+    { "key": "vehicle_id", "value": "" },
+    { "key": "incident_id", "value": "" },
+    { "key": "notification_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication — login as admin, then verify with `me`.",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.data?.login?.token) {",
+                  "    pm.collectionVariables.set('auth_token', jsonData.data.login.token);",
+                  "    console.log('Token saved:', jsonData.data.login.token.substring(0, 20) + '...');",
+                  "} else {",
+                  "    console.error('Login failed:', JSON.stringify(jsonData));",
+                  "    pm.expect.fail('Login failed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation Login($input: LoginInput!) { login(input: $input) { token user { id email role } } }\",\n  \"variables\": {\n    \"input\": {\n      \"email\": \"admin@smarttraffic.com\",\n      \"password\": \"admin1234\"\n    }\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { me { id email role createdAt } }\"\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Zones",
+      "description": "Traffic zone management.",
+      "item": [
+        {
+          "name": "Create Zone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.data?.createZone?.id) {",
+                  "    pm.collectionVariables.set('zone_id', jsonData.data.createZone.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation CreateZone($name: String!) { createZone(input: { name: $name }) { id name createdAt } }\",\n  \"variables\": {\n    \"name\": \"Downtown\"\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "List Zones",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { zones { id name } }\"\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vehicles",
+      "description": "Vehicle management, GPS tracking, and movement history.",
+      "item": [
+        {
+          "name": "Create Vehicle",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.data?.createVehicle?.id) {",
+                  "    pm.collectionVariables.set('vehicle_id', jsonData.data.createVehicle.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation CreateVehicle($input: CreateVehicleInput!) { createVehicle(input: $input) { id licensePlate type ownerId } }\",\n  \"variables\": {\n    \"input\": {\n      \"licensePlate\": \"ABC-1234\",\n      \"type\": \"CAR\"\n    }\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "List Vehicles",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { vehicles { id licensePlate type zoneId ownerId } }\"\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "Record GPS Position",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation RecordGps($vehicleId: ID!, $input: GpsInput!) { recordGpsPosition(vehicleId: $vehicleId, input: $input) { id latitude longitude recordedAt } }\",\n  \"variables\": {\n    \"vehicleId\": \"{{vehicle_id}}\",\n    \"input\": {\n      \"latitude\": 48.8566,\n      \"longitude\": 2.3522,\n      \"recordedAt\": \"2026-06-02T12:00:00Z\"\n    }\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "Movement History",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query MovementHistory($vehicleId: ID!) { movementHistory(vehicleId: $vehicleId) { items { id latitude longitude recordedAt } total } }\",\n  \"variables\": {\n    \"vehicleId\": \"{{vehicle_id}}\"\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Traffic",
+      "description": "Traffic analysis — compute density for all zones.",
+      "item": [
+        {
+          "name": "Compute Density",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation { computeDensity { id zoneId vehicleCount classification } }\"\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Incidents",
+      "description": "Incident management — report, update, and list incidents. Creates notifications automatically.",
+      "item": [
+        {
+          "name": "Create Incident",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.data?.createIncident?.id) {",
+                  "    pm.collectionVariables.set('incident_id', jsonData.data.createIncident.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation CreateIncident($input: CreateIncidentInput!) { createIncident(input: $input) { id type status description latitude longitude createdAt } }\",\n  \"variables\": {\n    \"input\": {\n      \"type\": \"ACCIDENT\",\n      \"description\": \"Multi-vehicle collision on Main St\",\n      \"latitude\": 48.8570,\n      \"longitude\": 2.3525\n    }\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "Update Incident Status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation UpdateStatus($id: ID!, $status: IncidentStatus!) { updateIncidentStatus(id: $id, input: { status: $status }) { id status } }\",\n  \"variables\": {\n    \"id\": \"{{incident_id}}\",\n    \"status\": \"IN_PROGRESS\"\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "Resolve Incident",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation ResolveIncident($id: ID!) { updateIncidentStatus(id: $id, input: { status: RESOLVED }) { id status } }\",\n  \"variables\": {\n    \"id\": \"{{incident_id}}\"\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "List Incidents",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { incidents { id type status description createdAt } }\"\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "Auto-generated notifications from incidents. View and mark as read.",
+      "item": [
+        {
+          "name": "List Notifications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.data?.notifications?.length > 0) {",
+                  "    pm.collectionVariables.set('notification_id', jsonData.data.notifications[0].id);",
+                  "    console.log('Notification ID saved:', jsonData.data.notifications[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { notifications { id title message isRead triggerType triggerId createdAt } }\"\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"mutation MarkAsRead($id: ID!) { markNotificationAsRead(id: $id) { id isRead } }\",\n  \"variables\": {\n    \"id\": \"{{notification_id}}\"\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}", "host": ["{{base_url}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}

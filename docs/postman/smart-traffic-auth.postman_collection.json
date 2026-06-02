@@ -17,7 +17,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation Register($input: RegisterInput!) {\n  register(registerInput: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
+            "query": "mutation Register($input: RegisterInput!) {\n  register(input: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
             "variables": "{\n  \"input\": {\n    \"email\": \"operator@smarttraffic.com\",\n    \"password\": \"password123\"\n  }\n}"
           }
         },
@@ -46,7 +46,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation Login($input: LoginInput!) {\n  login(loginInput: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
+            "query": "mutation Login($input: LoginInput!) {\n  login(input: $input) {\n    token\n    user { id email role createdAt updatedAt }\n  }\n}",
             "variables": "{\n  \"input\": {\n    \"email\": \"admin@smarttraffic.com\",\n    \"password\": \"admin1234\"\n  }\n}"
           }
         },
@@ -79,7 +79,7 @@
         "body": {
           "mode": "graphql",
           "graphql": {
-            "query": "mutation Register($input: RegisterInput!) {\n  register(registerInput: $input) {\n    token\n    user { id email role }\n  }\n}",
+            "query": "mutation Register($input: RegisterInput!) {\n  register(input: $input) {\n    token\n    user { id email role }\n  }\n}",
             "variables": "{\n  \"input\": {\n    \"email\": \"not-an-email\",\n    \"password\": \"short\"\n  }\n}"
           }
         },
