@@ -27,16 +27,18 @@ export class VehicleClientService {
    * @param {string} zoneId - The zone ID to count vehicles for.
    * @returns {Promise<number>} - The number of vehicles in the zone.
    */
-  async countVehiclesByZone(zoneId: string): Promise<number> {
+  async countVehiclesByZone(zoneId: string, token?: string): Promise<number> {
     try {
       const query = `
         query ($filter: VehicleFilterInput) {
           vehicles(filter: $filter) { id }
         }
       `;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = token;
       const response = await fetch(this.vehicleServiceUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ query, variables: { filter: { zoneId } } }),
       });
 
@@ -57,16 +59,18 @@ export class VehicleClientService {
    *
    * @returns {Promise<Record<string, number>>} - Map of zoneId to vehicle count.
    */
-  async countAllVehiclesByZone(): Promise<Record<string, number>> {
+  async countAllVehiclesByZone(token?: string): Promise<Record<string, number>> {
     try {
       const query = `
         query {
           vehicles { id zoneId }
         }
       `;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = token;
       const response = await fetch(this.vehicleServiceUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ query }),
       });
 

@@ -40,6 +40,7 @@ export class IncidentService {
       zoneId?: string;
     },
     reportedBy: string,
+    token?: string,
   ) {
     const incident = await this.prisma.incident.create({
       data: {
@@ -57,6 +58,7 @@ export class IncidentService {
       incident.id,
       input.type,
       input.description,
+      token,
     );
 
     return incident;
@@ -102,6 +104,7 @@ export class IncidentService {
     newStatus: IncidentStatus,
     currentUserId: string,
     currentUserRole: Role,
+    token?: string,
   ) {
     const incident = await this.prisma.incident.findUnique({ where: { id } });
     if (!incident) throw new NotFoundException('Incident not found');
@@ -129,6 +132,7 @@ export class IncidentService {
       incident.reportedBy,
       id,
       newStatus,
+      token,
     );
 
     return updated;

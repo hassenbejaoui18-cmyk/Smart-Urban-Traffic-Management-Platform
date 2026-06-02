@@ -27,20 +27,22 @@ export class NotificationClientService {
     incidentId: string,
     type: IncidentType,
     description: string,
+    token?: string,
   ) {
     const title = `Incident Reported: ${type}`;
     const message = `A ${type.toLowerCase().replace(/_/g, ' ')} incident has been reported: ${description}`;
-    await this.sendNotification(userId, title, message, 'INCIDENT', incidentId);
+    await this.sendNotification(userId, title, message, 'INCIDENT', incidentId, token);
   }
 
   async notifyIncidentStatusChanged(
     userId: string,
     incidentId: string,
     status: IncidentStatus,
+    token?: string,
   ) {
     const title = 'Incident Status Updated';
     const message = `Incident status has changed to ${status}.`;
-    await this.sendNotification(userId, title, message, 'INCIDENT', incidentId);
+    await this.sendNotification(userId, title, message, 'INCIDENT', incidentId, token);
   }
 
   private async sendNotification(
@@ -49,6 +51,7 @@ export class NotificationClientService {
     message: string,
     triggerType: string,
     triggerId: string,
+    token?: string,
   ) {
     try {
       const query = `
@@ -56,9 +59,13 @@ export class NotificationClientService {
           createNotification(input: $input) { id }
         }
       `;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) headers['Authorization'] = token;
       await fetch(this.notificationServiceUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           query,
           variables: {

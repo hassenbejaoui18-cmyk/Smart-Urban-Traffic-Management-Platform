@@ -52,7 +52,11 @@ Unit 6 — GraphQL Gateway + cross-service wiring — complete
 - `services/vehicles/src/vehicle.resolver.ts`, `services/incidents/src/incident.resolver.ts`, `services/notifications/src/notification.resolver.ts`: added `type: () => XxxFilterInput` to `@Args('filter', { nullable: true })` decorators to fix `UndefinedTypeError` (union `| null` breaks TypeScript reflection metadata).
 - All 5 `JwtAuthGuard` classes: overrode `getRequest()` to return `GqlExecutionContext.create(context).getContext().req` instead of the default `switchToHttp().getRequest()` (which returns `undefined` under `ApolloFederationDriver`, causing Passport crash at `IncomingMessageExt.logIn`).
 - `gateway/src/gateway.module.ts`: added `buildService` with `willSendRequest` that copies all headers from the incoming request context to the subgraph HTTP request; added `serviceHealthCheck: false` to prevent introspection timeout during startup.
-- `gateway/src/main.ts`: added retry loop (15 attempts, 3s apart) for gateway startup race condition with downstream subgraph services.
+- `gateway/src/main.ts`: added retry loop (15 attempts, 3s apart) with 3s initial delay and full stack trace on final failure for debugging if startup fails due to EADDRINUSE or null SDL from zombie subgraphs.
+- `gateway/src/gateway.module.ts`: removed unused `JwtModule` and `PassportModule` (gateway only forwards auth headers via `buildService`; doesn't sign/verify JWTs).
+- `setup.sh`: added `lsof -ti:4000-4005 | xargs kill -9` before `npm run dev:all` to kill stale processes; removed `AUTH_JWT_SECRET` from `gateway/.env`.
+- `package.json`: added `cleanup:ports` script (`lsof ... xargs kill -9; sleep 1`) and made `dev:all` run `npm run cleanup:ports && concurrently ...` so stale ports are always killed regardless of how services are started.
+- All 5 subgraph `main.ts` files: added `startWithRetry` wrapper that catches `EADDRINUSE` and retries up to 10 times with 1s delay — self-heals if a stale process holds the port after cleanup.
 
 ## Open Questions
 

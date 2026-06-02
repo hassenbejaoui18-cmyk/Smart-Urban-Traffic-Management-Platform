@@ -1,12 +1,8 @@
-/**
- * File: main.ts
- * -------------
- * Bootstrap entry point for the Traffic service.
- * Configures global ValidationPipe and starts the server on TRAFFIC_PORT (default 4003).
- */
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { TrafficModule } from './traffic.module';
+
+const PORT = process.env.TRAFFIC_PORT ?? 4003;
 
 async function bootstrap() {
   const app = await NestFactory.create(TrafficModule);
@@ -17,6 +13,29 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.TRAFFIC_PORT ?? 4003);
+  await app.listen(PORT);
 }
-void bootstrap();
+
+async function startWithRetry(maxRetries = 10, delayMs = 1000) {
+  for (let i = 1; i <= maxRetries; i++) {
+    try {
+      await bootstrap();
+      console.log(`Traffic running on port ${PORT}`);
+      return;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('EADDRINUSE') && i < maxRetries) {
+        console.log(`Traffic: port ${PORT} busy (attempt ${i}/${maxRetries}), retrying in ${delayMs}ms...`);
+        await new Promise((r) => setTimeout(r, delayMs));
+      } else if (i < maxRetries) {
+        console.log(`Traffic: attempt ${i}/${maxRetries} failed: ${message}. Retrying...`);
+        await new Promise((r) => setTimeout(r, delayMs));
+      } else {
+        console.error(`Traffic failed after ${maxRetries} attempts: ${message}`);
+        process.exit(1);
+      }
+    }
+  }
+}
+
+void startWithRetry();

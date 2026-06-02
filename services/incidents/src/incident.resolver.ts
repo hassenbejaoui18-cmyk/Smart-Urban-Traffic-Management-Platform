@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Role } from './common/role.enum';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { CreateIncidentInput } from './dto/create-incident.input';
@@ -29,8 +29,9 @@ export class IncidentResolver {
   async createIncident(
     @Args('input') input: CreateIncidentInput,
     @CurrentUser() user: JwtPayload,
+    @Context() context: any,
   ) {
-    return this.incidentService.create(input, user.sub);
+    return this.incidentService.create(input, user.sub, context.req.headers.authorization);
   }
 
   @Mutation(() => Incident)
@@ -39,12 +40,14 @@ export class IncidentResolver {
     @Args('id') id: string,
     @Args('input') input: UpdateIncidentStatusInput,
     @CurrentUser() user: JwtPayload,
+    @Context() context: any,
   ) {
     return this.incidentService.updateStatus(
       id,
       input.status,
       user.sub,
       user.role as Role,
+      context.req.headers.authorization,
     );
   }
 

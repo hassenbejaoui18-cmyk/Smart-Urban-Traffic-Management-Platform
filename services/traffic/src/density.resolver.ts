@@ -1,6 +1,6 @@
 
 import { UseGuards } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Role } from './common/role.enum';
 import { ComputeDensityInput } from './dto/compute-density.input';
 import { DensitySnapshot, ZoneDensity } from './entities/density-snapshot.entity';
@@ -28,9 +28,10 @@ export class DensityResolver {
   @Roles(Role.ADMIN, Role.OPERATOR)
   async computeDensity(
     @Args('input', { nullable: true }) input?: ComputeDensityInput,
+    @Context() context?: any,
   ) {
     // ++++++++++ Step 1: Delegate density computation to TrafficService +++++++++++
-    return this.trafficService.computeDensity(input);
+    return this.trafficService.computeDensity(input, context?.req?.headers?.authorization);
   }
 
   // ─── POST /graphql (query densitySnapshots) ───────────────────────

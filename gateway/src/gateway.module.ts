@@ -1,12 +1,9 @@
 import { join } from 'path';
 import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { IntrospectAndCompose, RemoteGraphQLDataSource } from '@apollo/gateway';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import ms from 'ms';
 
 /**
  * Module: GatewayModule
@@ -50,16 +47,6 @@ import ms from 'ms';
         serviceHealthCheck: false,
       },
     }),
-    JwtModule.registerAsync({
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('AUTH_JWT_SECRET'),
-        signOptions: {
-          expiresIn: (config.get<string>('AUTH_JWT_EXPIRATION') ?? '24h') as ms.StringValue,
-        },
-      }),
-      inject: [ConfigService],
-    }),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
 })
 export class GatewayModule {}

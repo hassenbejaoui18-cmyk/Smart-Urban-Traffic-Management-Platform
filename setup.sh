@@ -122,7 +122,6 @@ log "services/notifications/.env written"
 # Gateway
 cat > gateway/.env <<ENVEOF
 GATEWAY_PORT=4000
-AUTH_JWT_SECRET=${JWT_SECRET}
 ENVEOF
 log "gateway/.env written"
 
@@ -200,6 +199,12 @@ log "All services built"
 info "Regenerating Prisma clients..."
 npm run prisma:generate:all
 log "Prisma clients regenerated"
+
+# ── Kill any stale processes on our ports ──
+info "Cleaning up stale processes..."
+lsof -ti:4000-4005 2>/dev/null | xargs kill -9 2>/dev/null || true
+sleep 1
+log "Ports 4000-4005 cleared"
 
 # ── Done ──
 info "── Setup complete ──"

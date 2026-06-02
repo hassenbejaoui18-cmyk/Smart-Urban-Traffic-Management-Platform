@@ -98,7 +98,10 @@ export class TrafficService {
    * @param {number} [input.vehicleCount] - Explicit count (bypasses Vehicle service).
    * @returns {Promise<DensitySnapshot[]>} - The created snapshot(s).
    */
-  async computeDensity(input?: { zoneId?: string; vehicleCount?: number }) {
+  async computeDensity(
+    input?: { zoneId?: string; vehicleCount?: number },
+    token?: string,
+  ) {
     // ++++++++++ Step 1: Single zone with explicit vehicle count +++++++++++
     if (input?.zoneId && input.vehicleCount !== undefined) {
       const zone = await this.findZone(input.zoneId);
@@ -113,7 +116,7 @@ export class TrafficService {
     // ++++++++++ Step 2: Single zone — query Vehicle service for count +++++++++++
     if (input?.zoneId) {
       const zone = await this.findZone(input.zoneId);
-      const count = await this.vehicleClient.countVehiclesByZone(zone.id);
+      const count = await this.vehicleClient.countVehiclesByZone(zone.id, token);
       const classification = this.classify(count);
       return [
         await this.prisma.densitySnapshot.create({
@@ -126,7 +129,7 @@ export class TrafficService {
     const zones = await this.prisma.zone.findMany();
     if (zones.length === 0) return [];
 
-    const counts = await this.vehicleClient.countAllVehiclesByZone();
+    const counts = await this.vehicleClient.countAllVehiclesByZone(token);
 
     const snapshots = zones.map((zone) => ({
       zoneId: zone.id,
