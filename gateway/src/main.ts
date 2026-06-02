@@ -3,6 +3,10 @@ import { GatewayModule } from './gateway.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(GatewayModule);
+  app.enableCors({
+    origin: ['http://localhost:4000', 'https://studio.apollographql.com', 'http://localhost:3000'],
+    credentials: true,
+  });
   await app.listen(process.env.GATEWAY_PORT ?? 4000);
 }
 
