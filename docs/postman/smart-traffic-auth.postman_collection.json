@@ -110,23 +110,6 @@
                   "var json = pm.response.json();",
                   "if (json.data && json.data.createZone) {",
                   "  pm.collectionVariables.set('zoneId', json.data.createZone.id);",
-                  "} else if (json.errors && json.errors[0].message.indexOf('Unique constraint violation on name') !== -1) {",
-                  "  pm.sendRequest({",
-                  "    url: pm.collectionVariables.get('baseUrl') + '/graphql',",
-                  "    method: 'POST',",
-                  "    header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pm.collectionVariables.get('token') },",
-                  "    body: { mode: 'raw', raw: JSON.stringify({ query: 'query { zones { id name } }' }) }",
-                  "  }, function (err, res) {",
-                  "    if (!err) {",
-                  "      var zones = res.json().data.zones;",
-                  "      for (var i = 0; i < zones.length; i++) {",
-                  "        if (zones[i].name === 'Downtown') {",
-                  "          pm.collectionVariables.set('zoneId', zones[i].id);",
-                  "          break;",
-                  "        }",
-                  "      }",
-                  "    }",
-                  "  });",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -143,7 +126,7 @@
               "mode": "graphql",
               "graphql": {
                 "query": "mutation CreateZone($name: String!) {\n  createZone(input: { name: $name }) {\n    id name createdAt\n  }\n}",
-                "variables": "{\n  \"name\": \"Downtown\"\n}"
+                "variables": "{\n  \"name\": \"Zone-{{$timestamp}}\"\n}"
               }
             },
             "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
@@ -183,23 +166,6 @@
                   "var json = pm.response.json();",
                   "if (json.data && json.data.createVehicle) {",
                   "  pm.collectionVariables.set('vehicleId', json.data.createVehicle.id);",
-                  "} else if (json.errors && json.errors[0].message.indexOf('Unique constraint violation on license_plate') !== -1) {",
-                  "  pm.sendRequest({",
-                  "    url: pm.collectionVariables.get('baseUrl') + '/graphql',",
-                  "    method: 'POST',",
-                  "    header: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + pm.collectionVariables.get('token') },",
-                  "    body: { mode: 'raw', raw: JSON.stringify({ query: 'query { vehicles { id licensePlate } }' }) }",
-                  "  }, function (err, res) {",
-                  "    if (!err) {",
-                  "      var vehicles = res.json().data.vehicles;",
-                  "      for (var i = 0; i < vehicles.length; i++) {",
-                  "        if (vehicles[i].licensePlate === 'ABC-1234') {",
-                  "          pm.collectionVariables.set('vehicleId', vehicles[i].id);",
-                  "          break;",
-                  "        }",
-                  "      }",
-                  "    }",
-                  "  });",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -216,7 +182,7 @@
               "mode": "graphql",
               "graphql": {
                 "query": "mutation CreateVehicle($input: CreateVehicleInput!) {\n  createVehicle(input: $input) {\n    id licensePlate type ownerId\n  }\n}",
-                "variables": "{\n  \"input\": {\n    \"licensePlate\": \"ABC-1234\",\n    \"type\": \"CAR\"\n  }\n}"
+                "variables": "{\n  \"input\": {\n    \"licensePlate\": \"PLT-{{$timestamp}}\",\n    \"type\": \"CAR\"\n  }\n}"
               }
             },
             "url": { "raw": "{{baseUrl}}/graphql", "host": ["{{baseUrl}}"], "path": ["graphql"] }
